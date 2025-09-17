@@ -77,14 +77,16 @@ body {
 }
 
 .navbar-menu a {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(0, 158, 53, 0.85);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
+  font-size: 1.3rem;
+  text-decoration: bold;
 }
 
 .navbar-menu a:hover {
-  color: white;
+  color: rgba(12, 206, 240, 0.322);
 }
 
 .logout-btn {
