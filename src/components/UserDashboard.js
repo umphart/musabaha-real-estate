@@ -35,7 +35,7 @@ const UserDashboard = ({ user, onLogout }) => {
     { path: '/dashboard/profile', name: 'Profile', icon: 'fas fa-user' },
     { path: '/dashboard/plots', name: 'My Plots', icon: 'fas fa-map-marked' },
     { path: '/dashboard/payments', name: 'Payments', icon: 'fas fa-credit-card' },
-    { path: '/dashboard/documents', name: 'Documents', icon: 'fas fa-file' },
+    { path: '/dashboard/documents', name: 'Subsequent Payments', icon: 'fas fa-file' },
     { path: '/dashboard/subscribe', name: 'Apply for Plot', icon: 'fas fa-file-signature' },
   ];
 

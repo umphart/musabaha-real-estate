@@ -4,16 +4,18 @@ import AdminUsers from './AdminUsers';
 import AdminPlots from './AdminPlots';
 import AdminPayments from './AdminPayments';
 import AdminNotifications from './AdminNotifications';
-import './adminStyle.css';
+import './adminDashboard.css';
 import AdminRegisteredUsers from './AdminRegisteredUsers';
 import AdminUserPayments from './AdminUserPayments';
 import AdminPaymentApproval from './AdminPaymentApproval';
-import { DollarSign, TrendingUp, Users, Clock, Map, CheckCircle, AlertCircle, CreditCard, UserCheck, Bell } from 'lucide-react';
+import { DollarSign, TrendingUp, Users, Clock, Map, CheckCircle, AlertCircle, CreditCard, UserCheck, Bell, Menu, X } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AdminDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [adminCreatedUsers, setAdminCreatedUsers] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -38,6 +40,19 @@ const AdminDashboard = () => {
     { path: '/admin/user-payment', name: 'Users Payments', icon: 'fas fa-money-check' },
     { path: '/admin/notifications', name: 'Notifications', icon: 'fas fa-bell' },
   ];
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getAuthToken = () => localStorage.getItem('adminToken');
 
@@ -157,45 +172,44 @@ const AdminDashboard = () => {
   };
 
   // Show notification if there are pending requests
-// Show notification if there are pending requests
-const showPendingNotifications = (currentPending, stats) => {
-  if (currentPending > 0) {
-    if (!lastNotificationTime || currentPending > pendingRequests) {
-      const content = (
-        <div className="toast-notification">
-          <div className="toast-header">
-            <AlertCircle size={22} className="toast-icon" />
-            <strong>Pending Requests</strong>
+  const showPendingNotifications = (currentPending, stats) => {
+    if (currentPending > 0) {
+      if (!lastNotificationTime || currentPending > pendingRequests) {
+        const content = (
+          <div className="toast-notification">
+            <div className="toast-header">
+              <AlertCircle size={22} className="toast-icon" />
+              <strong>Pending Requests</strong>
+            </div>
+            <p>
+              You have <strong>{currentPending}</strong> pending requests needing your attention!
+            </p>
+            <div className="toast-actions">
+              <Link to="/admin/registered" className="btn-link">
+                New Registrations ({stats.pendingUsers})
+              </Link>
+              <Link to="/admin/payment-approval" className="btn-link">
+                New Payments ({stats.pendingAllPayments})
+              </Link>
+            </div>
           </div>
-          <p>
-            You have <strong>{currentPending}</strong> pending requests needing your attention!
-          </p>
-          <div className="toast-actions">
-            <Link to="/admin/registered" className="btn-link">
-              Review Registrations ({stats.pendingUsers})
-            </Link>
-            <Link to="/admin/payment-approval" className="btn-link">
-              Review Payments ({stats.pendingAllPayments})
-            </Link>
-          </div>
-        </div>
-      );
+        );
 
-      toast.info(content, {
-        position: "top-right",
-        autoClose: 6000,
-        hideProgressBar: true,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        className: "custom-toast",
-      });
+        toast.info(content, {
+          position: "top-right",
+          autoClose: 6000,
+          hideProgressBar: true,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          className: "custom-toast",
+        });
 
-      setLastNotificationTime(new Date());
+        setLastNotificationTime(new Date());
+      }
     }
-  }
-  setPendingRequests(currentPending);
-};
+    setPendingRequests(currentPending);
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -274,9 +288,9 @@ const showPendingNotifications = (currentPending, stats) => {
   
   // Calculate and show notifications for pending requests
   useEffect(() => {
-  const currentPending = calculatePendingRequests();
-  showPendingNotifications(currentPending, stats);
-}, [users, payments, subsequentPayments, adminCreatedUsers, adminCreatedPayments]);
+    const currentPending = calculatePendingRequests();
+    showPendingNotifications(currentPending, stats);
+  }, [users, payments, subsequentPayments, adminCreatedUsers, adminCreatedPayments]);
 
   const displayStats = [
     {
@@ -317,7 +331,7 @@ const showPendingNotifications = (currentPending, stats) => {
     {
       title: 'Admin Payments',
       value: stats.totalAdminPayments,
-      change: `Approved: ${stats.approvedAdminPayments}, Pending: ${stats.pendingAdminPayments}, Amount: ₦${stats.totalAdminAmount.toLocaleString()}`,
+      change: `Amount: ₦${stats.revenueFromPlots.toLocaleString()}`,
       icon: <UserCheck size={24} />,
       color: '#8b5cf6'
     },
@@ -346,8 +360,41 @@ const showPendingNotifications = (currentPending, stats) => {
     }).format(Number(value));
   };
 
+  const toggleSidebar = () => {
+    if (isMobile) {
+      setSidebarOpen(!sidebarOpen);
+    } else {
+      setSidebarCollapsed(!sidebarCollapsed);
+    }
+  };
+
+  const closeSidebar = () => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const getSidebarClass = () => {
+    if (isMobile) {
+      return sidebarOpen ? 'expanded' : 'collapsed';
+    }
+    return sidebarCollapsed ? 'collapsed' : 'expanded';
+  };
+
   return (
     <div className="dashboard-container">
+      {/* Mobile Toggle Button */}
+      {isMobile && (
+        <button className="mobile-menu-btn" onClick={toggleSidebar}>
+          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      )}
+
+      {/* Overlay for mobile when sidebar is open */}
+      {isMobile && sidebarOpen && (
+        <div className="sidebar-overlay" onClick={closeSidebar}></div>
+      )}
+
       {/* Toast notifications */}
       <ToastContainer
         position="top-right"
@@ -363,12 +410,12 @@ const showPendingNotifications = (currentPending, stats) => {
       
       {/* Sidebar */}
       <div
-        className={`sidebar ${sidebarCollapsed ? 'collapsed' : 'expanded'}`}
-        onMouseEnter={() => setSidebarCollapsed(false)}
-        onMouseLeave={() => setSidebarCollapsed(true)}
+        className={`sidebar ${getSidebarClass()}`}
+        onMouseEnter={() => !isMobile && setSidebarCollapsed(false)}
+        onMouseLeave={() => !isMobile && setSidebarCollapsed(true)}
       >
         <div className="sidebar-header">
-          <h3>{!sidebarCollapsed ? 'Admin Panel' : '🕵️‍♂️'}</h3>
+          <h3>{!sidebarCollapsed || isMobile ? 'Admin Panel' : '🕵️‍♂️'}</h3>
           {/* Notification bell with badge */}
           <div className="notification-bell" onClick={() => setShowNotifications(!showNotifications)}>
             <Bell size={20} />
@@ -391,7 +438,7 @@ const showPendingNotifications = (currentPending, stats) => {
                     <span className="notification-title">{stats.pendingUsers} User Registrations</span>
                     <span className="notification-desc">Pending approval</span>
                   </div>
-                  <Link to="/admin/registered" className="notification-action">Review</Link>
+                  <Link to="/admin/registered" className="notification-action" onClick={closeSidebar}>Review</Link>
                 </div>
               )}
               
@@ -402,7 +449,7 @@ const showPendingNotifications = (currentPending, stats) => {
                     <span className="notification-title">{stats.pendingAllPayments} Payments</span>
                     <span className="notification-desc">Awaiting approval</span>
                   </div>
-                  <Link to="/admin/payment-approval" className="notification-action">Review</Link>
+                  <Link to="/admin/payment-approval" className="notification-action" onClick={closeSidebar}>Review</Link>
                 </div>
               )}
               
@@ -425,10 +472,11 @@ const showPendingNotifications = (currentPending, stats) => {
               <Link
                 to={item.path}
                 className={location.pathname === item.path ? 'active' : ''}
-                title={sidebarCollapsed ? item.name : ''}
+                title={sidebarCollapsed && !isMobile ? item.name : ''}
+                onClick={closeSidebar}
               >
                 <i className={item.icon}></i>
-                {!sidebarCollapsed && <span>{item.name}</span>}
+                {(!sidebarCollapsed || isMobile) && <span>{item.name}</span>}
                 {/* Show notification badge on menu items if they have pending items */}
                 {item.path === '/admin/registered' && stats.pendingUsers > 0 && (
                   <span className="menu-badge">{stats.pendingUsers}</span>
@@ -443,7 +491,7 @@ const showPendingNotifications = (currentPending, stats) => {
       </div>
 
       {/* Main Content */}
-      <div className="main-content">
+      <div className={`main-content ${isMobile && sidebarOpen ? 'sidebar-open' : ''}`}>
         <Routes>
           <Route path="/" element={
             <div className="dashboard-content">
@@ -460,7 +508,7 @@ const showPendingNotifications = (currentPending, stats) => {
                 </div>
               )}
 
-        
+           
 
               {/* Stats Cards */}
               <div className="stats-grid">
