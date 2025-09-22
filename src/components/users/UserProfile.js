@@ -36,7 +36,7 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
       padding: "8px",
       border: "1px solid #ddd",
       textAlign: "left",
-      width: "12.5%", // 1/8th of row
+      width: "12.5%",
     },
     td: {
       padding: "8px",
@@ -103,21 +103,64 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
     );
   }
 
+  // When no subscription found
   if (!subscriptions) {
     return (
       <div style={styles.profileContainer}>
-        <div style={styles.errorMessage}>No subscription data found.</div>
+        <div
+          style={{
+            background: "#f8f9fa",
+            border: "1px solid #dee2e6",
+            borderRadius: "10px",
+            padding: "30px",
+            textAlign: "center",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+            color: "#495057",
+          }}
+        >
+          <i
+            className="fas fa-info-circle"
+            style={{ fontSize: "40px", color: "#007bff", marginBottom: "15px" }}
+          ></i>
+          <h3 style={{ marginBottom: "10px" }}>No Subscription Data Found</h3>
+          <p style={{ marginBottom: "20px", fontSize: "15px" }}>
+            You haven’t applied for a plot yet.  
+            To complete your profile, please apply for a plot.
+          </p>
+          <a
+            href="/dashboard/subscribe"
+            style={{
+              display: "inline-block",
+              background: "#007bff",
+              color: "#fff",
+              padding: "10px 20px",
+              borderRadius: "6px",
+              textDecoration: "none",
+              fontWeight: "bold",
+              transition: "background 0.3s",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.background = "#0056b3")}
+            onMouseOut={(e) => (e.currentTarget.style.background = "#007bff")}
+          >
+            <i className="fas fa-file-signature" style={{ marginRight: "8px" }}></i>
+            Apply for Plot
+          </a>
+        </div>
       </div>
     );
   }
 
-  // Helper to render 4 fields (8 columns)
+  // Helper to render 4 fields per row
   const renderRow = (f1, v1, f2, v2, f3, v3, f4, v4) => (
     <tr>
-      <th style={styles.th}>{f1}</th><td style={styles.td}>{v1 || "N/A"}</td>
-      <th style={styles.th}>{f2}</th><td style={styles.td}>{v2 || "N/A"}</td>
-      <th style={styles.th}>{f3}</th><td style={styles.td}>{v3 || "N/A"}</td>
-      <th style={styles.th}>{f4}</th><td style={styles.td}>{v4 || "N/A"}</td>
+      <th style={styles.th}>{f1}</th>
+      <td style={styles.td}>{v1 || "N/A"}</td>
+      <th style={styles.th}>{f2}</th>
+      <td style={styles.td}>{v2 || "N/A"}</td>
+      <th style={styles.th}>{f3}</th>
+      <td style={styles.td}>{v3 || "N/A"}</td>
+      <th style={styles.th}>{f4}</th>
+      <td style={styles.td}>{v4 || "N/A"}</td>
     </tr>
   );
 
@@ -130,9 +173,36 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
         <div style={styles.sectionHeader}>Personal Data</div>
         <table style={styles.table}>
           <tbody>
-            {renderRow("Full Name", subscriptions.name, "Email", subscriptions.email, "Phone", subscriptions.telephone, "Sex", subscriptions.sex)}
-            {renderRow("DOB", subscriptions.dob ? new Date(subscriptions.dob).toLocaleDateString() : null, "Nationality", subscriptions.nationality, "State of Origin", subscriptions.state_of_origin, "Occupation", subscriptions.occupation)}
-            {renderRow("Residential Address", subscriptions.residential_address, "Postal Address", subscriptions.postal_address, "", "", "", "")}
+            {renderRow(
+              "Full Name",
+              subscriptions.name,
+              "Email",
+              subscriptions.email,
+              "Phone",
+              subscriptions.telephone,
+              "Sex",
+              subscriptions.sex
+            )}
+            {renderRow(
+              "DOB",
+              subscriptions.dob ? new Date(subscriptions.dob).toLocaleDateString() : null,
+              "Nationality",
+              subscriptions.nationality,
+              "State of Origin",
+              subscriptions.state_of_origin,
+              "Occupation",
+              subscriptions.occupation
+            )}
+            {renderRow(
+              "Residential Address",
+              subscriptions.residential_address,
+              "Postal Address",
+              subscriptions.postal_address,
+              "",
+              "",
+              "",
+              ""
+            )}
           </tbody>
         </table>
       </div>
@@ -142,7 +212,16 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
         <div style={styles.sectionHeader}>Alternate Contact</div>
         <table style={styles.table}>
           <tbody>
-            {renderRow("Name", subscriptions.alt_contact_name, "Email", subscriptions.alt_contact_email, "Phone", subscriptions.alt_contact_tel, "Relationship", subscriptions.alt_contact_relationship)}
+            {renderRow(
+              "Name",
+              subscriptions.alt_contact_name,
+              "Email",
+              subscriptions.alt_contact_email,
+              "Phone",
+              subscriptions.alt_contact_tel,
+              "Relationship",
+              subscriptions.alt_contact_relationship
+            )}
             {renderRow("Address", subscriptions.alt_contact_address, "", "", "", "", "", "")}
           </tbody>
         </table>
@@ -153,9 +232,36 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
         <div style={styles.sectionHeader}>Plot Information</div>
         <table style={styles.table}>
           <tbody>
-            {renderRow("Estate", subscriptions.estate_name, "No. of Plots", subscriptions.number_of_plots, "Plot Size", subscriptions.plot_size, "Proposed Type", subscriptions.proposed_type)}
-            {renderRow("Proposed Use", subscriptions.proposed_use, "Payment Terms", subscriptions.payment_terms, "Status", subscriptions.status, "Created At", subscriptions.created_at ? new Date(subscriptions.created_at).toLocaleString() : null)}
-            {renderRow("Updated At", subscriptions.updated_at ? new Date(subscriptions.updated_at).toLocaleString() : null, "", "", "", "", "", "")}
+            {renderRow(
+              "Estate",
+              subscriptions.estate_name,
+              "No. of Plots",
+              subscriptions.number_of_plots,
+              "Plot Size",
+              subscriptions.plot_size,
+              "Proposed Type",
+              subscriptions.proposed_type
+            )}
+            {renderRow(
+              "Proposed Use",
+              subscriptions.proposed_use,
+              "Payment Terms",
+              subscriptions.payment_terms,
+              "Status",
+              subscriptions.status,
+              "Created At",
+              subscriptions.created_at ? new Date(subscriptions.created_at).toLocaleString() : null
+            )}
+            {renderRow(
+              "Updated At",
+              subscriptions.updated_at ? new Date(subscriptions.updated_at).toLocaleString() : null,
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            )}
           </tbody>
         </table>
       </div>
@@ -165,8 +271,26 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
         <div style={styles.sectionHeader}>Next of Kin</div>
         <table style={styles.table}>
           <tbody>
-            {renderRow("Name", subscriptions.next_of_kin_name, "Email", subscriptions.next_of_kin_email, "Phone", subscriptions.next_of_kin_tel, "Relationship", subscriptions.next_of_kin_relationship)}
-            {renderRow("Address", subscriptions.next_of_kin_address, "Occupation", subscriptions.next_of_kin_occupation, "Office Address", subscriptions.next_of_kin_office_address, "", "")}
+            {renderRow(
+              "Name",
+              subscriptions.next_of_kin_name,
+              "Email",
+              subscriptions.next_of_kin_email,
+              "Phone",
+              subscriptions.next_of_kin_tel,
+              "Relationship",
+              subscriptions.next_of_kin_relationship
+            )}
+            {renderRow(
+              "Address",
+              subscriptions.next_of_kin_address,
+              "Occupation",
+              subscriptions.next_of_kin_occupation,
+              "Office Address",
+              subscriptions.next_of_kin_office_address,
+              "",
+              ""
+            )}
           </tbody>
         </table>
       </div>

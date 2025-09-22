@@ -794,79 +794,98 @@ const createSimpleTable = (doc, tableData, startY = 50) => {
       </div>
 
       <div className="content-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Contact</th>
-              <th>Plot Taken</th>
-              <th>Date Taken</th>
-              <th>Total money to Pay</th>
-              <th>Initial Deposit</th>
-              <th>Price per Plot</th>
-              <th>Payment Schedule</th>
-              <th>Total Balance</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map(user => (
-              <tr key={user.id}>
-                <td>
-                  <div className="user-info">
-                    <FiUser className="user-icon" />
-                    <span>{user.name}</span>
-                  </div>
-                </td>
-                <td>{user.contact}</td>
-                <td>
-                  <div className="plot-info">
-                    <FiHome className="icon" />
-                    <span>{user.plot_taken}</span>
-                  </div>
-                </td>
-                <td>{user.date_taken}</td>
-                <td>{formatCurrency(calculateTotalPrice(user.price_per_plot))}</td>
-                <td>{formatCurrency(user.initial_deposit)}</td>
-                <td>
-                  {user.price_per_plot
-                    .split(",")
-                    .map((price, idx) => (
-                      <span key={idx}>
-                        {formatCurrency(price.trim())}
-                        {idx < user.price_per_plot.split(",").length - 1 && ", "}
-                      </span>
-                    ))}
-                </td>
-                <td>
-                  <div className="payment-schedule">
-                    <FiCalendar className="icon" />
-                    <span>{user.payment_schedule}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={`balance ${parseFloat(user.total_balance) === 0 ? 'paid' : ''}`}>
-                    {formatCurrency(user.total_balance)}
-                  </div>
-                </td>
-                <td>
-                  <span className={`status-badge ${user.status.toLowerCase()}`}>
-                    {user.status === 'Completed' && <FiCheckCircle className="icon" />}
-                    {user.status}
-                  </span>
-                </td>
-                <td>
-                  <div className="action-buttons">
-                    <FiEye className="action-icon view" onClick={() => handleViewUser(user)} />
-                    <FiEdit className="action-icon edit" onClick={() => handleEditUser(user)} />
-                    <FiTrash2 className="action-icon delete" onClick={() => handleDeleteUser(user.id)} />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+<div className="table-container">
+  <table className="user-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Contact</th>
+        <th>Plot Taken</th>
+        <th>Date Taken</th>
+        <th>Total Money</th>
+        <th>Deposit</th>
+        <th>Price/Plot</th>
+        <th>Schedule</th>
+        <th>Balance</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredUsers.map((user) => (
+        <tr key={user.id}>
+          <td>
+            <div className="user-qinfo">
+              <FiUser className="user-icon" />
+              <span>{user.name}</span>
+            </div>
+          </td>
+          <td>{user.contact}</td>
+          <td>
+            <div className="plot-info">
+              <FiHome className="icon" />
+              <span>{user.plot_taken}</span>
+            </div>
+          </td>
+          <td>{user.date_taken}</td>
+          <td>{formatCurrency(calculateTotalPrice(user.price_per_plot))}</td>
+          <td>{formatCurrency(user.initial_deposit)}</td>
+          <td>
+            {user.price_per_plot
+              .split(",")
+              .map((price, idx) => (
+                <span key={idx}>
+                  {formatCurrency(price.trim())}
+                  {idx < user.price_per_plot.split(",").length - 1 && ", "}
+                </span>
+              ))}
+          </td>
+          <td>
+            <div className="payment-schedule">
+              <FiCalendar className="icon" />
+              <span>{user.payment_schedule}</span>
+            </div>
+          </td>
+          <td>
+            <div
+              className={`balance ${
+                parseFloat(user.total_balance) === 0 ? "paid" : ""
+              }`}
+            >
+              {formatCurrency(user.total_balance)}
+            </div>
+          </td>
+          <td>
+            <span className={`status-badge ${user.status.toLowerCase()}`}>
+              {user.status === "Completed" && (
+                <FiCheckCircle className="icon" />
+              )}
+              {user.status}
+            </span>
+          </td>
+          <td>
+            <div className="action-buttons">
+              <FiEye
+                className="action-icon view"
+                onClick={() => handleViewUser(user)}
+              />
+              <FiEdit
+                className="action-icon edit"
+                onClick={() => handleEditUser(user)}
+              />
+              <FiTrash2
+                className="action-icon delete"
+                onClick={() => handleDeleteUser(user.id)}
+              />
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+
       </div>
 
       {/* Create User Modal */}

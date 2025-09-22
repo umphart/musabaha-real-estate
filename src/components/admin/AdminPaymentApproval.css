@@ -68,7 +68,7 @@
 }
 
 .status-badge.rejected {
-  background-color: #fef2f2;
+  background-color: #c55757;
   color: #ef4444;
 }
 
@@ -80,22 +80,11 @@
   align-items: center;
 }
 
-.action-buttons button {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 50%;
-  font-size: 18px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: background 0.2s, transform 0.2s;
-}
 
 .action-buttons button:hover {
   background: rgba(0, 0, 0, 0.05);
   transform: scale(1.1);
+  color: red;
 }
 
 /* Approve */
@@ -106,10 +95,7 @@
   padding: 6px;
 }
 
-.btn-approve:hover {
-  background: rgba(40, 167, 69, 0.15);
-  background-color: #059669;
-}
+
 
 /* Reject */
 .btn-reject {

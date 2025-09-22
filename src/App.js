@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import './App.css';
 import MHL from './images/MHL.jpg'; 
 import Swal from "sweetalert2";
@@ -10,44 +10,58 @@ import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminLogin from './components/admin/AdminLogin';
 import LandingPage from './components/LandingPage';
+import Header from './components/Header'; // Import Header component
 
-// Simple Navbar component with navigation links
+// Navbar component that only shows when not authenticated
 const Navbar = ({ isAuthenticated, user, onLogout }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      setScrolled(isScrolled);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []); 
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    closeMenu();
+    onLogout();
+  };
+
+  // Don't render navbar if user is authenticated
+  if (isAuthenticated) {
+    return null;
+  }
+
   return (
-    <nav className="navbar">
-      {/* Left: Logo */}
-      <div className="navbar-left">
-        <img src={MHL} alt="MUSABAHA Logo" className="navbar-logo" />
-      </div>
+    <>
+      <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`}>
+        <div className="navbar-container">
+          {/* Logo and Brand */}
+          <div className="navbar-brand">
+            <img src={MHL} alt="MUSABAHA Logo" className="navbar-logo" />
+            <span className="navbar-title">MUSABAHA HOMES LTD.</span>
+          </div>
+        </div>
+      </nav>
 
-      {/* Center: Title */}
-      <div className="navbar-center">
-        <span>MUSABAHA HOMES LTD.</span>
-      </div>
-
-      {/* Right: Menu */}
-      <div className="navbar-menu">
-        <a href="/">Home</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-        {isAuthenticated ? (
-          <>
-            <a href="/dashboard">Dashboard</a>
-            {user && user.role === 'admin' && (
-              <a href="/admin">Admin</a>
-            )}
-            <button onClick={onLogout} className="logout-btn">
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <a href="/login">Login</a>
-            <a href="/admin-login">Admin</a>
-          </>
-        )}
-      </div>
-    </nav>
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <div className="navbar-overlay" onClick={closeMenu}></div>
+      )}
+    </>
   );
 };
 
@@ -112,7 +126,11 @@ function App() {
   return (
     <Router>
       <div className="App">
+        {/* Show header only if authenticated */}
+        {isAuthenticated && <Header user={user} />}
+
         <Navbar isAuthenticated={isAuthenticated} user={user} onLogout={handleLogout} />
+
         <Routes>
           <Route 
             path="/" 
@@ -138,8 +156,7 @@ function App() {
           />
           <Route 
             path="/admin-login" 
-            element={
-              isAuthenticated && user && user.role === 'admin' ? 
+            element={isAuthenticated && user && user.role === 'admin' ? 
               <Navigate to="/admin" replace /> : 
               <AdminLogin onAdminLogin={handleAdminLogin} />
             } 
@@ -165,6 +182,6 @@ function App() {
       </div>
     </Router>
   );
-}
+};
 
 export default App;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import AdminUsers from './AdminUsers';
 import AdminPlots from './AdminPlots';
 import AdminPayments from './AdminPayments';
@@ -12,7 +12,8 @@ import { DollarSign, TrendingUp, Users, Clock, Map, CheckCircle, AlertCircle, Cr
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ onLogout }) => {
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,6 +28,20 @@ const AdminDashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [lastNotificationTime, setLastNotificationTime] = useState(null);
   const location = useLocation();
+
+  const handleAdminLogout = () => {
+    // Clear admin-specific tokens
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminData');
+    
+    // Call the parent's logout function if provided
+    if (onLogout && typeof onLogout === 'function') {
+      onLogout();
+    } else {
+      // Fallback: redirect to home
+      navigate('/');
+    }
+  };
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -47,6 +62,7 @@ const AdminDashboard = () => {
       setIsMobile(mobile);
       if (!mobile) {
         setSidebarOpen(false);
+        setSidebarCollapsed(true); // Collapse by default on large screens
       }
     };
 
@@ -477,7 +493,8 @@ const AdminDashboard = () => {
               >
                 <i className={item.icon}></i>
                 {(!sidebarCollapsed || isMobile) && <span>{item.name}</span>}
-                {/* Show notification badge on menu items if they have pending items */}
+                
+                {/* Notification badges */}
                 {item.path === '/admin/registered' && stats.pendingUsers > 0 && (
                   <span className="menu-badge">{stats.pendingUsers}</span>
                 )}
@@ -487,6 +504,30 @@ const AdminDashboard = () => {
               </Link>
             </li>
           ))}
+
+          {/* Logout Button as last menu item */}
+          <li>
+            <button 
+              onClick={handleAdminLogout} 
+              className="logout-btn" 
+              aria-label="Logout"
+              title={sidebarCollapsed && !isMobile ? 'Logout' : ''}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#bba9a7ff',
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+                padding: '10px 15px',
+                cursor: 'pointer',
+                fontWeight: 500
+              }}
+            >
+              <i className="fas fa-sign-out-alt"></i>
+              {(!sidebarCollapsed || isMobile) && <span style={{ marginLeft: '10px' }}>Logout</span>}
+            </button>
+          </li>
         </ul>
       </div>
 
@@ -507,8 +548,6 @@ const AdminDashboard = () => {
                   {error}
                 </div>
               )}
-
-           
 
               {/* Stats Cards */}
               <div className="stats-grid">

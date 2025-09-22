@@ -504,7 +504,6 @@ const handleProceedToPayment = (subscription) => {
         <p style={styles.subscriptionDetailsP}><strong>Price:</strong> {subscription.price}</p>
         <p style={styles.subscriptionDetailsP}><strong>Payment Terms:</strong> {subscription.payment_terms}</p>
         <p style={styles.subscriptionDetailsP}><strong>Submitted:</strong> {new Date(subscription.created_at).toLocaleDateString()}</p>
-        
         {/* Payment Status Information */}
         {subscription.payment && (
           <>

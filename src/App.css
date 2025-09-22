@@ -41,82 +41,363 @@ body {
   height: 100vh;
   font-size: 1.5rem;
 }
-
 /* ===============================
-   Navbar
+   Enhanced Navbar Styles
 ================================= */
 .navbar {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  height: 70px;
-  z-index: 1100; /* higher than sidebar */
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  padding: 0.8rem 0;
 }
 
+.navbar-scrolled {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0;
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
 .navbar-brand {
   display: flex;
   align-items: center;
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: white;
+  gap: 1rem;
 }
 
-.navbar-brand i { margin-right: 0.5rem; }
+
+
+.navbar-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color:white;
+  letter-spacing: 0.5px;
+}
 
 .navbar-menu {
   display: flex;
+  align-items: center;
   gap: 1.5rem;
 }
 
-.navbar-menu a {
-  color: rgba(0, 158, 53, 0.85);
+.navbar-link {
+  color: #e0dede;
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.3s ease;
-  font-size: 1.3rem;
-  text-decoration: bold;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.navbar-menu a:hover {
-  color: rgba(12, 206, 240, 0.322);
+.navbar-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--secondary), var(--primary));
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.navbar-link:hover {
+  color: var(--secondary);
+}
+
+.navbar-link:hover::after {
+  width: 80%;
+}
+
+.navbar-button {
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.login-btn {
+  background: var(--secondary);
+  color: white;
+}
+
+.login-btn:hover {
+  background: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.create-account-btn {
+  background: var(--success);
+  color: white;
+}
+
+.create-account-btn:hover {
+  background: #219653;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
 }
 
 .logout-btn {
   background: var(--accent);
   color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 1rem;
-  transition: background-color 0.3s ease;
 }
 
 .logout-btn:hover {
   background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
 }
 
-/* Responsive Navbar */
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.navbar-toggle-icon {
+  width: 25px;
+  height: 3px;
+  background: var(--dark);
+  margin: 3px 0;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.navbar-toggle-open .navbar-toggle-icon:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.navbar-toggle-open .navbar-toggle-icon:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar-toggle-open .navbar-toggle-icon:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -6px);
+}
+
+.navbar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: none;
+}
+
+/* Mobile Responsive Styles */
 @media (max-width: 768px) {
-  .navbar {
+  .navbar-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 70%;
+    max-width: 300px;
+    height: 100vh;
+    background: white;
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 5rem 2rem;
+    gap: 2rem;
+    transition: right 0.3s ease;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
   }
-  .navbar-menu { gap: 1rem; }
+  
+  .navbar-menu-open {
+    right: 0;
+  }
+  
+  .navbar-toggle {
+    display: flex;
+    z-index: 1001;
+  }
+  
+  .navbar-overlay {
+    display: block;
+  }
+  
+  .navbar-title {
+    font-size: 1.2rem;
+  }
+  
+  .navbar-logo {
+    height: 35px;
+  }
 }
 
+@media (max-width: 480px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+  
+  .navbar-title {
+    display: none;
+  }
+}
+
+/* Remove duplicate navbar styles */
+.navbar-left, .navbar-center {
+  display: none;
+}
+/* Add this to your CSS file */
+.create-account-btn {
+  background: var(--success);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.create-account-btn:hover {
+  background: #219653;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+}
+.login-btn {
+  background:none;
+  color: rgb(12, 238, 88);
+
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+
+.logout-btn {
+  background: none;
+  color: rgb(202, 22, 22);
+ 
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.navbar-toggle {
+  display: none;
+  flex-direction: column;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+
+.navbar-toggle-icon {
+  width: 25px;
+  height: 3px;
+  background: #bcc2c9;
+  margin: 3px 0;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.navbar-toggle-open .navbar-toggle-icon:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.navbar-toggle-open .navbar-toggle-icon:nth-child(2) {
+  
+  opacity: 0;
+}
+
+.navbar-toggle-open .navbar-toggle-icon:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -6px);
+}
+
+.navbar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: none;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .navbar-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 70%;
+    max-width: 300px;
+    height: 100vh;
+    background: white;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 5rem 2rem;
+    gap: 2rem;
+    transition: right 0.3s ease;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .navbar-menu-open {
+    right: 0;
+  }
+  
+  .navbar-toggle {
+    color:rgb(150, 116, 116) ;
+    display: flex;
+  }
+  
+  .navbar-overlay {
+    display: block;
+  }
+  
+  .navbar-title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+  
+  .navbar-title {
+    display: none;
+  }
+}
 /* ===============================
-   Messages & States
+   Navbar
 ================================= */
+
 .message {
   padding: 10px;
   margin: 10px 0;
@@ -223,7 +504,7 @@ button:disabled {
 
 .btn-secondary {
   background: #6c757d;
-  color: white;
+  color: rgb(245, 31, 31);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -261,7 +542,7 @@ button:disabled {
   display: flex;
   align-items: center;
   padding: 1rem;
-  color: white;
+  color: rgb(199, 33, 33);
   text-decoration: none;
   border: none;
   background: none;
@@ -359,7 +640,7 @@ button:disabled {
   align-items: center;
   padding: 12px 24px;
   background: #1e3a8a;
-  color: #fff;
+  color: #dd2828;
   position: relative;
 }
 
@@ -383,9 +664,9 @@ button:disabled {
 }
 
 .navbar-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
   object-fit: cover;
 }
 /* Profile Page Styles */
