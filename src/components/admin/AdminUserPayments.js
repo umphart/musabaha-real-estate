@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import { DollarSign, TrendingUp, Users, Clock } from "lucide-react";
+import { TrendingUp, Users, Clock } from "lucide-react";
 import { FiCheck, FiEye, FiX } from "react-icons/fi";
+import { TbCurrencyNaira } from "react-icons/tb"; // Naira icon
+
+import "./AdminUserPayments.css"; // Optional external responsive styles
 
 const AdminUserPayments = () => {
   const [payments, setPayments] = useState([]);
@@ -10,7 +13,7 @@ const AdminUserPayments = () => {
     totalDeposited: 0,
     pendingPayments: 0,
     approvedPayments: 0,
-    totalUsers: 0
+    totalUsers: 0,
   });
 
   useEffect(() => {
@@ -22,8 +25,6 @@ const AdminUserPayments = () => {
     try {
       const response = await fetch("http://localhost:5000/api/user-payments");
       const result = await response.json();
-
-      console.log("API result:", result);
 
       if (result.success && Array.isArray(result.payments)) {
         setPayments(result.payments);
@@ -40,32 +41,30 @@ const AdminUserPayments = () => {
   };
 
   const setupWebSocket = () => {
-    // In a real app, you'd connect to your WebSocket server
-    // This is a simulation of receiving new payment notifications
-    console.log("Setting up WebSocket connection for real-time notifications...");
-    
-    // Simulate receiving a new payment notification after 5 seconds
-    setTimeout(() => {
-      // This would come from your WebSocket in a real implementation
-      simulateNewPaymentNotification();
-    }, 5000);
+    console.log("Setting up WebSocket simulation...");
+    setTimeout(() => simulateNewPaymentNotification(), 5000);
   };
 
   const simulateNewPaymentNotification = () => {
-    // Simulate a new payment being made
-    Swal.fire({
-      title: 'New Payment Received!',
-      text: 'A user has made a new payment. Check the payments list for details.',
-      icon: 'info',
-      confirmButtonText: 'View Payments',
-      toast: true,
-      position: 'top-end',
-      timer: 5000,
-      showConfirmButton: true
-    });
-    
-    // Refresh the payments list to include the new payment
-    fetchPayments();
+    // Only show notification if there are pending (not approved) payments
+    const hasPending = payments.some(
+      (payment) => payment.status && payment.status.toLowerCase() === "pending"
+    );
+
+    if (hasPending) {
+      Swal.fire({
+        title: "New Payment Received!",
+        text: "A user has made a new payment. Check the payments list for details.",
+        icon: "info",
+        confirmButtonText: "View Payments",
+        toast: true,
+        position: "top-end",
+        timer: 5000,
+        showConfirmButton: true,
+      });
+
+      fetchPayments();
+    }
   };
 
   const calculateStats = (paymentsData) => {
@@ -74,27 +73,23 @@ const AdminUserPayments = () => {
     let approvedPayments = 0;
     const uniqueUsers = new Set();
 
-    paymentsData.forEach(payment => {
+    paymentsData.forEach((payment) => {
       if (payment.status === "approved") {
         totalDeposited += Number(payment.amount) || 0;
         approvedPayments++;
       } else if (payment.status === "pending") {
         pendingPayments++;
       }
-      
-      if (payment.user_id) {
-        uniqueUsers.add(payment.user_id);
-      } else if (payment.contact) {
-        // Use contact as a fallback user identifier
-        uniqueUsers.add(payment.contact);
-      }
+
+      if (payment.user_id) uniqueUsers.add(payment.user_id);
+      else if (payment.contact) uniqueUsers.add(payment.contact);
     });
 
     setStats({
       totalDeposited,
       pendingPayments,
       approvedPayments,
-      totalUsers: uniqueUsers.size
+      totalUsers: uniqueUsers.size,
     });
   };
 
@@ -109,15 +104,13 @@ const AdminUserPayments = () => {
 
   const handlePaymentAction = async (paymentId, action) => {
     try {
-      // Map frontend actions to backend status values
       const statusMap = {
         approve: "approved",
         reject: "rejected",
-        pending: "pending"
+        pending: "pending",
       };
-      
       const backendStatus = statusMap[action] || action;
-      
+
       const response = await fetch(
         `http://localhost:5000/api/user-payments/${paymentId}/status`,
         {
@@ -127,13 +120,10 @@ const AdminUserPayments = () => {
         }
       );
 
-      console.log(`Response for ${action}:`, response);
-
       const result = await response.json();
 
       if (result.success) {
         Swal.fire("Success!", `Payment ${action}d successfully!`, "success");
-        // Refresh data to get updated stats
         fetchPayments();
       } else {
         Swal.fire("Error!", result.error || `Failed to ${action} payment`, "error");
@@ -149,21 +139,21 @@ const AdminUserPayments = () => {
   return (
     <div className="admin-content">
       <div className="content-header">
-        <h2>User Payments</h2>
+        <h2>Client Payments</h2>
       </div>
 
       {/* Statistics Cards */}
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon total-deposits">
-            <DollarSign size={24} />
+            <TbCurrencyNaira size={24} />
           </div>
           <div className="stat-content">
             <h3>{formatCurrency(stats.totalDeposited)}</h3>
             <p>Total Deposited</p>
           </div>
         </div>
-        
+
         <div className="stat-card">
           <div className="stat-icon pending-payments">
             <Clock size={24} />
@@ -173,7 +163,7 @@ const AdminUserPayments = () => {
             <p>Pending Payments</p>
           </div>
         </div>
-        
+
         <div className="stat-card">
           <div className="stat-icon approved-payments">
             <TrendingUp size={24} />
@@ -183,14 +173,14 @@ const AdminUserPayments = () => {
             <p>Approved Payments</p>
           </div>
         </div>
-        
+
         <div className="stat-card">
           <div className="stat-icon total-users">
             <Users size={24} />
           </div>
           <div className="stat-content">
             <h3>{stats.totalUsers}</h3>
-            <p>Total Users</p>
+            <p>Total Clients</p>
           </div>
         </div>
       </div>
@@ -210,7 +200,6 @@ const AdminUserPayments = () => {
                 <th>Total Price</th>
                 <th>Outstanding</th>
                 <th>Method</th>
-                <th>Reference</th>
                 <th>Date</th>
                 <th>Status</th>
                 <th>Receipt</th>
@@ -228,11 +217,10 @@ const AdminUserPayments = () => {
                   <td>{formatCurrency(p.total_price)}</td>
                   <td>{formatCurrency(p.outstanding_balance)}</td>
                   <td>{p.payment_method}</td>
-                  <td>{p.transaction_reference}</td>
                   <td>{new Date(p.transaction_date).toLocaleDateString()}</td>
                   <td>
-                    <span className={`status-badge ${p.status}`}>
-                      {p.status}
+                    <span className={`status-badge ${p.status.toLowerCase()}`}>
+                      {p.status.charAt(0).toUpperCase() + p.status.slice(1).toLowerCase()}
                     </span>
                   </td>
                   <td>
@@ -242,7 +230,6 @@ const AdminUserPayments = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         title="View Receipt"
-                        className="text-blue-600 hover:text-blue-800"
                       >
                         <FiEye size={18} />
                       </a>
@@ -250,28 +237,26 @@ const AdminUserPayments = () => {
                       "—"
                     )}
                   </td>
-
-                  <td className="flex gap-2">
-                    {p.status === "pending" && (
+                  <td className="table-actions">
+                    {p.status.toLowerCase() === "pending" ? (
                       <>
                         <button
-                          className="text-green-600 hover:text-green-800"
-                          onClick={() => handlePaymentAction(p.id, "approved")}
+                          className="approve-btn"
+                          onClick={() => handlePaymentAction(p.id, "approve")}
                           title="Approve"
                         >
                           <FiCheck size={16} />
                         </button>
                         <button
-                          className="text-red-600 hover:text-red-800"
+                          className="reject-btn"
                           onClick={() => handlePaymentAction(p.id, "reject")}
                           title="Reject"
                         >
                           <FiX size={16} />
                         </button>
                       </>
-                    )}
-                    {p.status !== "pending" && (
-                      <span className="action-complete">Processed</span>
+                    ) : (
+                      <span className="processed-text">Processed</span>
                     )}
                   </td>
                 </tr>

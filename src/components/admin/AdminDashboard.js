@@ -10,6 +10,8 @@ import AdminUserPayments from './AdminUserPayments';
 import AdminPaymentApproval from './AdminPaymentApproval';
 import { DollarSign, TrendingUp, Users, Clock, Map, CheckCircle, AlertCircle, CreditCard, UserCheck, Bell, Menu, X } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
+import { Currency } from 'lucide-react';
+
 import 'react-toastify/dist/ReactToastify.css';
 
 const AdminDashboard = ({ onLogout }) => {
@@ -30,15 +32,12 @@ const AdminDashboard = ({ onLogout }) => {
   const location = useLocation();
 
   const handleAdminLogout = () => {
-    // Clear admin-specific tokens
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminData');
     
-    // Call the parent's logout function if provided
     if (onLogout && typeof onLogout === 'function') {
       onLogout();
     } else {
-      // Fallback: redirect to home
       navigate('/');
     }
   };
@@ -47,12 +46,12 @@ const AdminDashboard = ({ onLogout }) => {
 
   const menuItems = [
     { path: '/admin', name: 'Dashboard', icon: 'fas fa-tachometer-alt' },
-    { path: '/admin/users', name: 'Users', icon: 'fas fa-users' },
+    { path: '/admin/users', name: 'Client', icon: 'fas fa-users' },
     { path: '/admin/plots', name: 'Plots', icon: 'fas fa-map-marked' },
     { path: '/admin/payments', name: 'Payments', icon: 'fas fa-money-check' },
     { path: '/admin/registered', name: 'Register', icon: 'fas fa-user-check' },
     { path: '/admin/payment-approval', name: 'Payment Approval', icon: 'fas fa-check-circle' },
-    { path: '/admin/user-payment', name: 'Users Payments', icon: 'fas fa-money-check' },
+    { path: '/admin/user-payment', name: 'Client Payments', icon: 'fas fa-money-check' },
     { path: '/admin/notifications', name: 'Notifications', icon: 'fas fa-bell' },
   ];
 
@@ -62,7 +61,7 @@ const AdminDashboard = ({ onLogout }) => {
       setIsMobile(mobile);
       if (!mobile) {
         setSidebarOpen(false);
-        setSidebarCollapsed(true); // Collapse by default on large screens
+        setSidebarCollapsed(true);
       }
     };
 
@@ -70,15 +69,53 @@ const AdminDashboard = ({ onLogout }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Simplified sidebar state management
+  const toggleMobileSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeMobileSidebar = () => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleSidebarEnter = () => {
+    if (!isMobile) {
+      setSidebarCollapsed(false);
+    }
+  };
+
+  const handleSidebarLeave = () => {
+    if (!isMobile) {
+      setSidebarCollapsed(true);
+    }
+  };
+
+  // Get sidebar class based on state
+  const getSidebarClass = () => {
+    if (isMobile) {
+      return sidebarOpen ? 'sidebar-mobile-open' : 'sidebar-mobile-closed';
+    }
+    return sidebarCollapsed ? 'sidebar-desktop-collapsed' : 'sidebar-desktop-expanded';
+  };
+
+  // Get main content class based on state
+  const getMainContentClass = () => {
+    if (isMobile) {
+      return sidebarOpen ? 'main-content-mobile-sidebar-open' : '';
+    }
+    return sidebarCollapsed ? 'main-content-desktop-sidebar-collapsed' : 'main-content-desktop-sidebar-expanded';
+  };
+
+  // Rest of your existing methods (getAuthToken, fetchDashboardData, calculatePendingRequests, etc.)
   const getAuthToken = () => localStorage.getItem('adminToken');
 
-  // Fetch all data for dashboard statistics
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       const token = getAuthToken();
 
-      // Fetch registered users using the correct endpoint
       const usersResponse = await fetch(`${API_BASE_URL}/api/subscriptions/all`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -89,7 +126,6 @@ const AdminDashboard = ({ onLogout }) => {
       if (!usersResponse.ok) throw new Error('Failed to fetch users');
       const usersData = await usersResponse.json();
 
-      // Fetch admin-created users
       const adminUsersResponse = await fetch(`${API_BASE_URL}/api/admin/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -102,7 +138,6 @@ const AdminDashboard = ({ onLogout }) => {
         adminUsersData = await adminUsersResponse.json();
       }
 
-      // Fetch initial payments
       const paymentsResponse = await fetch(`${API_BASE_URL}/api/user-payments`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -111,7 +146,6 @@ const AdminDashboard = ({ onLogout }) => {
       });
       const paymentsData = await paymentsResponse.json();
 
-      // Fetch subsequent payments
       const subsequentPaymentsResponse = await fetch(`${API_BASE_URL}/api/user-subsequent-payments`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -120,7 +154,6 @@ const AdminDashboard = ({ onLogout }) => {
       });
       const subsequentPaymentsData = await subsequentPaymentsResponse.json();
 
-      // Fetch admin-created payments
       const adminPaymentsResponse = await fetch(`${API_BASE_URL}/api/admin/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -171,7 +204,6 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
-  // Calculate pending requests
   const calculatePendingRequests = () => {
     const allUsers = [...users, ...adminCreatedUsers];
     const pendingUsers = allUsers.filter(u => u.status?.toLowerCase() === "pending").length;
@@ -187,7 +219,6 @@ const AdminDashboard = ({ onLogout }) => {
     return pendingUsers + pendingPayments;
   };
 
-  // Show notification if there are pending requests
   const showPendingNotifications = (currentPending, stats) => {
     if (currentPending > 0) {
       if (!lastNotificationTime || currentPending > pendingRequests) {
@@ -230,25 +261,26 @@ const AdminDashboard = ({ onLogout }) => {
   useEffect(() => {
     fetchDashboardData();
     
-    // Set up interval to check for updates every 2 minutes
     const intervalId = setInterval(fetchDashboardData, 120000);
     
     return () => clearInterval(intervalId);
   }, []);
 
-  // Calculate statistics
+  // Calculate statistics (your existing calculateStatistics function)
   const calculateStatistics = () => {
-    // Combine regular users and admin-created users
+    // ... your existing calculateStatistics implementation ...
     const allUsers = [...users, ...adminCreatedUsers];
     
-    // User statistics
     const totalUsers = allUsers.length;
     const pendingUsers = allUsers.filter(u => u.status?.toLowerCase() === "pending").length;
-    const approvedUsers = allUsers.filter(u => u.status?.toLowerCase() === "approved" || u.status?.toLowerCase() === "completed").length;
+    const approvedUsers = allUsers.filter(u => 
+      u.status?.toLowerCase() === "approved" || 
+      u.status?.toLowerCase() === "completed" || 
+      u.status?.toLowerCase() === "active"
+    ).length;
 
-    // Plot statistics
     const totalPlots = allUsers.reduce((sum, u) => sum + (u.plot_taken?.split(",").length || 0), 0);
-    const revenueFromPlots = allUsers.reduce((sum, u) => {
+    const potentialPlotRevenue = allUsers.reduce((sum, u) => {
       if (!u.price_per_plot) return sum;
       return sum + u.price_per_plot
         .split(",")
@@ -256,53 +288,72 @@ const AdminDashboard = ({ onLogout }) => {
         .reduce((a, b) => a + b, 0);
     }, 0);
 
-    // Combine all payments (initial, subsequent, and admin-created)
-    const allPayments = [
-      ...payments,
-      ...subsequentPayments,
-      ...adminCreatedPayments
-    ];
-
-    // Initial payments
     const totalInitialPayments = payments.length;
     const pendingInitialPayments = payments.filter(p => p.status === "pending").length;
     const approvedInitialPayments = payments.filter(p => p.status === "approved").length;
-    const totalInitialAmount = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-
-    // Subsequent payments
+    
     const totalSubsequentPayments = subsequentPayments.length;
     const pendingSubsequentPayments = subsequentPayments.filter(p => p.status === "pending").length;
     const approvedSubsequentPayments = subsequentPayments.filter(p => p.status === "approved").length;
-    const totalSubsequentAmount = subsequentPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-
-    // Admin-created payments
+    
     const totalAdminPayments = adminCreatedPayments.length;
     const pendingAdminPayments = adminCreatedPayments.filter(p => p.status === "pending").length;
     const approvedAdminPayments = adminCreatedPayments.filter(p => p.status === "approved").length;
-    const totalAdminAmount = adminCreatedPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
-    // Combined
+    const approvedInitialAmount = payments
+      .filter(p => p.status === "approved")
+      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+    const approvedSubsequentAmount = subsequentPayments
+      .filter(p => p.status === "approved")
+      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+    const actualAdminPayments = adminCreatedPayments
+      .filter(p => p.status === "approved")
+      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+    const pendingInitialAmount = payments
+      .filter(p => p.status === "pending")
+      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+    const pendingSubsequentAmount = subsequentPayments
+      .filter(p => p.status === "pending")
+      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+    const totalPaidByUsers = allUsers.reduce((sum, user) => {
+      return sum + (Number(user.total_paid) || 0);
+    }, 0);
+
     const totalAllPayments = totalInitialPayments + totalSubsequentPayments + totalAdminPayments;
-    const totalAllAmount = totalInitialAmount + totalSubsequentAmount + totalAdminAmount;
     const pendingAllPayments = pendingInitialPayments + pendingSubsequentPayments + pendingAdminPayments;
-
-    // Total revenue (plots + payments)
-    const totalRevenue = revenueFromPlots + totalAllAmount;
+    
+    const totalActualBalance = approvedInitialAmount + approvedSubsequentAmount + actualAdminPayments + totalPaidByUsers;
+    
+    const totalPendingAmount = pendingInitialAmount + pendingSubsequentAmount;
+    
+    const totalReceivable = totalActualBalance + totalPendingAmount;
 
     return {
       totalUsers, pendingUsers, approvedUsers,
-      totalPlots, revenueFromPlots,
-      totalInitialPayments, pendingInitialPayments, approvedInitialPayments, totalInitialAmount,
-      totalSubsequentPayments, pendingSubsequentPayments, approvedSubsequentPayments, totalSubsequentAmount,
-      totalAdminPayments, pendingAdminPayments, approvedAdminPayments, totalAdminAmount,
-      totalAllPayments, totalAllAmount, pendingAllPayments,
-      totalRevenue
+      totalPlots, potentialPlotRevenue,
+      totalInitialPayments, pendingInitialPayments, approvedInitialPayments,
+      totalSubsequentPayments, pendingSubsequentPayments, approvedSubsequentPayments,
+      totalAdminPayments, pendingAdminPayments, approvedAdminPayments,
+      totalAllPayments, pendingAllPayments,
+      approvedInitialAmount,
+      approvedSubsequentAmount,
+      actualAdminPayments,
+      totalPaidByUsers,
+      totalActualBalance,
+      pendingInitialAmount,
+      pendingSubsequentAmount,
+      totalPendingAmount,
+      totalReceivable
     };
   };
 
   const stats = calculateStatistics();
   
-  // Calculate and show notifications for pending requests
   useEffect(() => {
     const currentPending = calculatePendingRequests();
     showPendingNotifications(currentPending, stats);
@@ -310,58 +361,58 @@ const AdminDashboard = ({ onLogout }) => {
 
   const displayStats = [
     {
-      title: 'Total Users',
+      title: 'Total Client',
       value: stats.totalUsers,
       change: `${stats.approvedUsers} approved, ${stats.pendingUsers} pending`,
       icon: <Users size={24} />,
       color: '#4e73df'
     },
     {
-      title: 'Total Account Balance',
-      value: `₦${stats.totalRevenue.toLocaleString()}`,
-      change: `Admin: ₦${stats.revenueFromPlots.toLocaleString()}, Users: ₦${stats.totalAllAmount.toLocaleString()}`,
+      title: 'Actual Account Balance',
+      value: `₦${stats.totalActualBalance.toLocaleString()}`,
+      change: `Confirmed money from approved payments`,
       icon: <CreditCard size={24} />,
       color: '#10b981'
     },
     {
-      title: 'Total Payments',
-      value: stats.totalAllPayments,
-      change: `Amount: ₦${stats.totalAllAmount.toLocaleString()}`,
-      icon: <CreditCard size={24} />,
+      title: 'Pending Approval Amount',
+      value: `₦${stats.totalPendingAmount.toLocaleString()}`,
+      change: `Awaiting approval: ${stats.pendingAllPayments} payments`,
+      icon: <Clock size={24} />,
+      color: '#f6c23e'
+    },
+    {
+      title: 'Total Receivable',
+      value: `₦${stats.totalReceivable.toLocaleString()}`,
+      change: `Actual + Pending amounts`,
+      icon: <i className="fas fa-naira-sign"></i>,
       color: '#36b9cc'
     },
     {
       title: 'Initial Payments',
       value: stats.totalInitialPayments,
-      change: `Approved: ${stats.approvedInitialPayments}, Pending: ${stats.pendingInitialPayments}, Amount: ₦${stats.totalInitialAmount.toLocaleString()}`,
+      change: `Approved: ${stats.approvedInitialPayments}, Pending: ${stats.pendingInitialPayments}`,
       icon: <CheckCircle size={24} />,
       color: '#10b981'
     },
     {
       title: 'Subsequent Payments',
       value: stats.totalSubsequentPayments,
-      change: `Approved: ${stats.approvedSubsequentPayments}, Pending: ${stats.pendingSubsequentPayments}, Amount: ₦${stats.totalSubsequentAmount.toLocaleString()}`,
+      change: `Approved: ${stats.approvedSubsequentPayments}, Pending: ${stats.pendingSubsequentPayments}`,
       icon: <TrendingUp size={24} />,
       color: '#8b5cf6'
     },
     {
       title: 'Admin Payments',
       value: stats.totalAdminPayments,
-      change: `Amount: ₦${stats.revenueFromPlots.toLocaleString()}`,
+      change: `Approved: ${stats.approvedAdminPayments}, Pending: ${stats.pendingAdminPayments}`,
       icon: <UserCheck size={24} />,
       color: '#8b5cf6'
     },
     {
-      title: 'Pending Approvals',
-      value: stats.pendingAllPayments,
-      change: `${stats.pendingInitialPayments} initial, ${stats.pendingSubsequentPayments} subsequent, ${stats.pendingAdminPayments} admin`,
-      icon: <Clock size={24} />,
-      color: '#f6c23e'
-    },
-    {
-      title: 'Plots Sales ',
+      title: 'Plots Allocated',
       value: stats.totalPlots,
-      change: `Amount: ₦${stats.revenueFromPlots.toLocaleString()}`,
+      change: `Potential value: ₦${stats.potentialPlotRevenue.toLocaleString()}`,
       icon: <Map size={24} />,
       color: '#1cc88a'
     }
@@ -376,39 +427,18 @@ const AdminDashboard = ({ onLogout }) => {
     }).format(Number(value));
   };
 
-  const toggleSidebar = () => {
-    if (isMobile) {
-      setSidebarOpen(!sidebarOpen);
-    } else {
-      setSidebarCollapsed(!sidebarCollapsed);
-    }
-  };
-
-  const closeSidebar = () => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  };
-
-  const getSidebarClass = () => {
-    if (isMobile) {
-      return sidebarOpen ? 'expanded' : 'collapsed';
-    }
-    return sidebarCollapsed ? 'collapsed' : 'expanded';
-  };
-
   return (
     <div className="dashboard-container">
       {/* Mobile Toggle Button */}
       {isMobile && (
-        <button className="mobile-menu-btn" onClick={toggleSidebar}>
+        <button className="mobile-menu-btn" onClick={toggleMobileSidebar}>
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       )}
 
       {/* Overlay for mobile when sidebar is open */}
       {isMobile && sidebarOpen && (
-        <div className="sidebar-overlay" onClick={closeSidebar}></div>
+        <div className="sidebar-overlay" onClick={closeMobileSidebar}></div>
       )}
 
       {/* Toast notifications */}
@@ -427,11 +457,16 @@ const AdminDashboard = ({ onLogout }) => {
       {/* Sidebar */}
       <div
         className={`sidebar ${getSidebarClass()}`}
-        onMouseEnter={() => !isMobile && setSidebarCollapsed(false)}
-        onMouseLeave={() => !isMobile && setSidebarCollapsed(true)}
+        onMouseEnter={handleSidebarEnter}
+        onMouseLeave={handleSidebarLeave}
       >
         <div className="sidebar-header">
-          <h3>{!sidebarCollapsed || isMobile ? 'Admin Panel' : '🕵️‍♂️'}</h3>
+          <h3>
+            {isMobile 
+              ? 'Admin Panel' 
+              : (sidebarCollapsed ? 'AP' : 'Admin Panel')
+            }
+          </h3>
           {/* Notification bell with badge */}
           <div className="notification-bell" onClick={() => setShowNotifications(!showNotifications)}>
             <Bell size={20} />
@@ -454,7 +489,7 @@ const AdminDashboard = ({ onLogout }) => {
                     <span className="notification-title">{stats.pendingUsers} User Registrations</span>
                     <span className="notification-desc">Pending approval</span>
                   </div>
-                  <Link to="/admin/registered" className="notification-action" onClick={closeSidebar}>Review</Link>
+                  <Link to="/admin/registered" className="notification-action" onClick={closeMobileSidebar}>Review</Link>
                 </div>
               )}
               
@@ -465,7 +500,7 @@ const AdminDashboard = ({ onLogout }) => {
                     <span className="notification-title">{stats.pendingAllPayments} Payments</span>
                     <span className="notification-desc">Awaiting approval</span>
                   </div>
-                  <Link to="/admin/payment-approval" className="notification-action" onClick={closeSidebar}>Review</Link>
+                  <Link to="/admin/payment-approval" className="notification-action" onClick={closeMobileSidebar}>Review</Link>
                 </div>
               )}
               
@@ -488,11 +523,11 @@ const AdminDashboard = ({ onLogout }) => {
               <Link
                 to={item.path}
                 className={location.pathname === item.path ? 'active' : ''}
-                title={sidebarCollapsed && !isMobile ? item.name : ''}
-                onClick={closeSidebar}
+                title={!isMobile && sidebarCollapsed ? item.name : ''}
+                onClick={closeMobileSidebar}
               >
                 <i className={item.icon}></i>
-                {(!sidebarCollapsed || isMobile) && <span>{item.name}</span>}
+                {(isMobile || !sidebarCollapsed) && <span>{item.name}</span>}
                 
                 {/* Notification badges */}
                 {item.path === '/admin/registered' && stats.pendingUsers > 0 && (
@@ -505,13 +540,13 @@ const AdminDashboard = ({ onLogout }) => {
             </li>
           ))}
 
-          {/* Logout Button as last menu item */}
+          {/* Logout Button */}
           <li>
             <button 
               onClick={handleAdminLogout} 
               className="logout-btn" 
               aria-label="Logout"
-              title={sidebarCollapsed && !isMobile ? 'Logout' : ''}
+              title={!isMobile && sidebarCollapsed ? 'Logout' : ''}
               style={{
                 background: 'none',
                 border: 'none',
@@ -525,14 +560,14 @@ const AdminDashboard = ({ onLogout }) => {
               }}
             >
               <i className="fas fa-sign-out-alt"></i>
-              {(!sidebarCollapsed || isMobile) && <span style={{ marginLeft: '10px' }}>Logout</span>}
+              {(isMobile || !sidebarCollapsed) && <span style={{ marginLeft: '10px' }}>Logout</span>}
             </button>
           </li>
         </ul>
       </div>
 
       {/* Main Content */}
-      <div className={`main-content ${isMobile && sidebarOpen ? 'sidebar-open' : ''}`}>
+      <div className={`main-content ${getMainContentClass()}`}>
         <Routes>
           <Route path="/" element={
             <div className="dashboard-content">
@@ -569,176 +604,162 @@ const AdminDashboard = ({ onLogout }) => {
 
               {/* Enhanced Charts and detailed overview */}
               <div className="dashboard-charts">
-                {/* Payment Overview */}
+                {/* Financial Overview */}
                 <div className="chart-container enhanced-card">
                   <div className="chart-header">
-                    <h3><i className="fas fa-money-bill-wave"></i> Payment Overview</h3>
+                    <h3><i className="fas fa-money-bill-wave"></i> Financial Overview</h3>
                     <div className="header-actions">
-                      <span className="total-amount">Total: {formatCurrency(stats.totalAllAmount)}</span>
+                      <span className="total-amount">Actual Balance: {formatCurrency(stats.totalActualBalance)}</span>
                     </div>
                   </div>
-                  <div className="payment-overview-grid">
-                    <div className="payment-category" style={{ borderColor: '#10b981' }}>
-                      <div className="payment-header">
+                  <div className="financial-overview-grid">
+                    <div className="financial-category actual-balance">
+                      <div className="financial-header">
                         <CheckCircle size={20} color="#10b981" />
-                        <h4>Initial Payments</h4>
+                        <h4>Actual Account Balance</h4>
                       </div>
-                      <div className="payment-stats">
+                      <div className="financial-stats">
                         <div className="stat-row">
-                          <span className="label">Total</span>
-                          <span className="value">{stats.totalInitialPayments}</span>
+                          <span className="label">Approved Initial Payments</span>
+                          <span className="value">{formatCurrency(stats.approvedInitialAmount)}</span>
                         </div>
                         <div className="stat-row">
-                          <span className="label">Approved</span>
-                          <span className="value approved">{stats.approvedInitialPayments}</span>
+                          <span className="label">Approved Subsequent Payments</span>
+                          <span className="value">{formatCurrency(stats.approvedSubsequentAmount)}</span>
                         </div>
                         <div className="stat-row">
-                          <span className="label">Pending</span>
-                          <span className="value pending">{stats.pendingInitialPayments}</span>
+                          <span className="label">Admin Payments</span>
+                          <span className="value">{formatCurrency(stats.actualAdminPayments)}</span>
+                        </div>
+                        <div className="stat-row">
+                          <span className="label">User Total Paid</span>
+                          <span className="value">{formatCurrency(stats.totalPaidByUsers)}</span>
                         </div>
                         <div className="stat-row total-row">
-                          <span className="label">Amount</span>
-                          <span className="value amount">{formatCurrency(stats.totalInitialAmount)}</span>
+                          <span className="label">Total Actual Balance</span>
+                          <span className="value amount highlight">{formatCurrency(stats.totalActualBalance)}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="payment-category" style={{ borderColor: '#8b5cf6' }}>
-                      <div className="payment-header">
-                        <TrendingUp size={20} color="#8b5cf6" />
-                        <h4>Subsequent Payments</h4>
+                    <div className="financial-category pending-amount">
+                      <div className="financial-header">
+                        <Clock size={20} color="#f6c23e" />
+                        <h4>Pending Approval</h4>
                       </div>
-                      <div className="payment-stats">
+                      <div className="financial-stats">
                         <div className="stat-row">
-                          <span className="label">Total</span>
-                          <span className="value">{stats.totalSubsequentPayments}</span>
+                          <span className="label">Pending Initial Payments</span>
+                          <span className="value">{formatCurrency(stats.pendingInitialAmount)}</span>
                         </div>
                         <div className="stat-row">
-                          <span className="label">Approved</span>
-                          <span className="value approved">{stats.approvedSubsequentPayments}</span>
-                        </div>
-                        <div className="stat-row">
-                          <span className="label">Pending</span>
-                          <span className="value pending">{stats.pendingSubsequentPayments}</span>
+                          <span className="label">Pending Subsequent Payments</span>
+                          <span className="value">{formatCurrency(stats.pendingSubsequentAmount)}</span>
                         </div>
                         <div className="stat-row total-row">
-                          <span className="label">Amount</span>
-                          <span className="value amount">{formatCurrency(stats.totalSubsequentAmount)}</span>
+                          <span className="label">Total Pending</span>
+                          <span className="value amount">{formatCurrency(stats.totalPendingAmount)}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="payment-summary" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                    <div className="financial-summary" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
                       <div className="summary-header">
                         <CreditCard size={24} color="#fff" />
-                        <h4>Combined Totals</h4>
+                        <h4>Total Receivable</h4>
                       </div>
                       <div className="summary-stats">
                         <div className="summary-row">
-                          <span className="label">Total Payments</span>
-                          <span className="value">{stats.totalAllPayments}</span>
+                          <span className="label">Actual Balance</span>
+                          <span className="value">{formatCurrency(stats.totalActualBalance)}</span>
                         </div>
                         <div className="summary-row">
-                          <span className="label">Pending Approval</span>
-                          <span className="value">{stats.pendingAllPayments}</span>
+                          <span className="label">+ Pending Amount</span>
+                          <span className="value">{formatCurrency(stats.totalPendingAmount)}</span>
                         </div>
-                        <div className="summary-row highlight">
-                          <span className="label">Total Amount</span>
-                          <span className="value">{formatCurrency(stats.totalAllAmount)}</span>
+                        <div className="summary-row highlight grand-total">
+                          <span className="label">Total Receivable</span>
+                          <span className="value">{formatCurrency(stats.totalReceivable)}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Revenue Summary with Admin Payments and Quick Actions */}
+                {/* Payment Breakdown & Quick Actions */}
                 <div className="chart-container enhanced-card">
                   <div className="chart-header">
-                    <h3><i className="fas fa-chart-line"></i> Account Summary & Admin Overview</h3>
-                    <div className="header-actions">
-                      <span className="total-revenue">Total: {formatCurrency(stats.totalRevenue)}</span>
-                    </div>
+                    <h3><i className="fas fa-chart-pie"></i> Payment Breakdown & Quick Actions</h3>
                   </div>
                   
-                  <div className="revenue-admin-container">
-                    {/* Admin Payments Section */}
-                    <div className="admin-payments-section">
+                  <div className="payment-breakdown-container">
+                    {/* Payment Statistics */}
+                    <div className="payment-statistics-section">
                       <h4 className="section-title">
-                        <UserCheck size={18} color="#4e73df" />
-                        Admin Payments
+                        <CreditCard size={18} color="#4e73df" />
+                        Payment Statistics
                       </h4>
-                      <div className="admin-payments-grid">
-                        <div className="admin-stat">
-                          <span className="admin-label">Total</span>
-                          <span className="admin-value">{stats.totalAdminPayments}</span>
-                        </div>
-                        <div className="admin-stat">
-                          <span className="admin-label">Approved</span>
-                          <span className="admin-value approved">{stats.approvedAdminPayments}</span>
-                        </div>
-                        <div className="admin-stat">
-                          <span className="admin-label">Pending</span>
-                          <span className="admin-value pending">{stats.pendingAdminPayments}</span>
-                        </div>
-                        <div className="admin-stat total">
-                          <span className="admin-label">Amount Received</span>
-                          <span>{formatCurrency(stats.revenueFromPlots)}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Revenue Breakdown */}
-                    <div className="revenue-breakdown">
-                      <div className="revenue-chart">
-                        <div className="chart-visual">
-                          <div className="revenue-bar" style={{ height: '100%', width: `${(stats.revenueFromPlots / stats.totalRevenue) * 100}%`, backgroundColor: '#1cc88a' }}></div>
-                          <div className="revenue-bar" style={{ height: '100%', width: `${(stats.totalAllAmount / stats.totalRevenue) * 100}%`, backgroundColor: '#4e73df' }}></div>
-                        </div>
-                        <div className="chart-legend">
-                          <div className="legend-item">
-                            <div className="color-box" style={{ backgroundColor: '#1cc88a' }}></div>
-                            <span>Payment By Admin</span>
-                            <span className="legend-value">{formatCurrency(stats.revenueFromPlots)}</span>
-                          </div>
-                          <div className="legend-item">
-                            <div className="color-box" style={{ backgroundColor: '#4e73df' }}></div>
-                            <span>Payment By User</span>
-                            <span className="legend-value">{formatCurrency(stats.totalAllAmount)}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="revenue-details">
-                        <div className="revenue-category">
-                          <h5>Payment Breakdown</h5>
-                          <div className="revenue-item">
+                      <div className="payment-stats-grid">
+                        <div className="payment-stat-card">
+                          <div className="payment-stat-header">
+                            <CheckCircle size={16} color="#10b981" />
                             <span>Initial Payments</span>
-                            <span>{formatCurrency(stats.totalInitialAmount)}</span>
                           </div>
-                          <div className="revenue-item">
-                            <span>Subsequent Payments</span>
-                            <span>{formatCurrency(stats.totalSubsequentAmount)}</span>
-                          </div>
-                          
-                          <div className="revenue-total">
-                            <span>Total Payments</span>
-                            <span>{formatCurrency(stats.totalAllAmount)}</span>
+                          <div className="payment-stat-details">
+                            <div className="payment-stat-row">
+                              <span>Total:</span>
+                              <span>{stats.totalInitialPayments}</span>
+                            </div>
+                            <div className="payment-stat-row">
+                              <span>Approved:</span>
+                              <span className="approved">{stats.approvedInitialPayments}</span>
+                            </div>
+                            <div className="payment-stat-row">
+                              <span>Pending:</span>
+                              <span className="pending">{stats.pendingInitialPayments}</span>
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="revenue-category">
-                          <h5>Overall Revenue</h5>
-                          <div className="revenue-item highlight">
-                            <span>Admin </span>
-                            <span>{formatCurrency(stats.revenueFromPlots)}</span>
+
+                        <div className="payment-stat-card">
+                          <div className="payment-stat-header">
+                            <TrendingUp size={16} color="#8b5cf6" />
+                            <span>Subsequent Payments</span>
                           </div>
-                          <div className="revenue-item highlight">
-                            <span>User</span>
-                            <span>{formatCurrency(stats.totalAllAmount)}</span>
+                          <div className="payment-stat-details">
+                            <div className="payment-stat-row">
+                              <span>Total:</span>
+                              <span>{stats.totalSubsequentPayments}</span>
+                            </div>
+                            <div className="payment-stat-row">
+                              <span>Approved:</span>
+                              <span className="approved">{stats.approvedSubsequentPayments}</span>
+                            </div>
+                            <div className="payment-stat-row">
+                              <span>Pending:</span>
+                              <span className="pending">{stats.pendingSubsequentPayments}</span>
+                            </div>
                           </div>
-                          <div className="revenue-grand-total">
-                            <span>Total Balance</span>
-                            <span>{formatCurrency(stats.totalRevenue)}</span>
+                        </div>
+
+                        <div className="payment-stat-card">
+                          <div className="payment-stat-header">
+                            <UserCheck size={16} color="#8b5cf6" />
+                            <span>Admin Payments</span>
+                          </div>
+                          <div className="payment-stat-details">
+                            <div className="payment-stat-row">
+                              <span>Total:</span>
+                              <span>{stats.totalAdminPayments}</span>
+                            </div>
+                            <div className="payment-stat-row">
+                              <span>Approved:</span>
+                              <span className="approved">{stats.approvedAdminPayments}</span>
+                            </div>
+                            <div className="payment-stat-row">
+                              <span>Pending:</span>
+                              <span className="pending">{stats.pendingAdminPayments}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -754,18 +775,22 @@ const AdminDashboard = ({ onLogout }) => {
                         <Link to="/admin/payment-approval" className="quick-action-btn">
                           <AlertCircle size={16} />
                           <span>Review Payments ({stats.pendingAllPayments})</span>
+                          <small>₦{stats.totalPendingAmount.toLocaleString()} pending</small>
                         </Link>
                         <Link to="/admin/users" className="quick-action-btn">
                           <Users size={16} />
-                          <span>Manage Users ({stats.totalUsers})</span>
+                          <span>Manage Client ({stats.totalUsers})</span>
+                          <small>{stats.pendingUsers} pending approval</small>
                         </Link>
                         <Link to="/admin/user-payment" className="quick-action-btn">
-                          <DollarSign size={16} />
+                          <i className="fas fa-naira-sign"></i>
                           <span>Payment History</span>
+                          <small>View all transactions</small>
                         </Link>
                         <Link to="/admin/registered" className="quick-action-btn">
                           <CheckCircle size={16} />
                           <span>Approve Registrations ({stats.pendingUsers})</span>
+                          <small>New user requests</small>
                         </Link>
                       </div>
                     </div>

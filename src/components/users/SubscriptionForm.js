@@ -1,92 +1,252 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './SubscriptionForm.css';
+import React, { useState, useEffect } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import { useNavigate } from "react-router-dom";
+import {
+  FiFileText,
+  FiX,
+  FiInfo,
+  FiCheck,
+  FiChevronDown,
+  FiChevronUp,
+  FiDownload,
+  FiEye,
+} from "react-icons/fi";
+import "./SubscriptionForm.css";
+
+// ✅ FIX: Use modern worker setup (no need to import pdf.worker.min.mjs)
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
+
 
 const SubscriptionForm = () => {
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [visiblePlotsCount, setVisiblePlotsCount] = useState(5);
+  const initialVisiblePlots = 5;
   const [step, setStep] = useState(1);
-  const [showModal, setShowModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [showLayoutModal, setShowLayoutModal] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [plots, setPlots] = useState([]);
+  const [currentPdf, setCurrentPdf] = useState(null);
+  const [allLayoutPlans, setAllLayoutPlans] = useState([]);
+  const [selectedLayout, setSelectedLayout] = useState(null);
+  const [pdfError, setPdfError] = useState(null);
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    // Subscriber's Data
-    title: '',
-    name: '',
-    residentialAddress: '',
-    occupation: '',
-    officeAddress: '',
-    dob: '',
-    stateOfOrigin: '',
-    lga: '',
-    sex: '',
-    telephone: '',
-    nationality: '',
-    officeNumber: '',
-    homeNumber: '',
-    postalAddress: '',
-    email: '',
-    identification: '',
-    utilityBill: '',
-    passportPhoto: null,
-    identificationFile: null,
-    utilityBillFile: null,
-    
-    // Next of Kin's Data
-    nextOfKinName: '',
-    nextOfKinAddress: '',
-    nextOfKinRelationship: '',
-    nextOfKinTel: '',
-    nextOfKinOccupation: '',
-    nextOfKinOfficeAddress: '',
-    nextOfKinEmail: '',
-    
-    // Plot Information
-    estateName: '',
-    numberOfPlots: '',
-    proposedUse: '',
-    proposedType: '',
-    plotSize: '',
-    paymentTerms: '',
-    price: '',
-    plotId: '',
-    
-    // Alternative Contact
-    altContactName: '',
-    altContactAddress: '',
-    altContactRelationship: '',
-    altContactTel: '',
-    altContactEmail: '',
-    
-    // Referral Information
-    referralAgentName: '',
-    referralAgentContact: '',
-    
-    // Agreement
-    agreedToTerms: false,
-    signatureText: '',
-    signatureFile: null
-  });
-   useEffect(() => {
-    const fetchPlots = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/plots");
-        const data = await res.json();
-        if (data.success) {
-          // only keep Available plots
-          setPlots(data.data.filter(plot => plot.status === "Available"));
+const [formData, setFormData] = useState({
+  selectedPlots: [],
+  title: '',
+  name: '',
+  residentialAddress: '',
+  occupation: '',
+  officeAddress: '',
+  dob: '',
+  stateOfOrigin: '',
+  lga: '',
+  sex: '',
+  phoneNumber: '',
+  nationality: '',
+  homeNumber: '',
+  email: '',
+  identification: '',
+  passportPhoto: null,
+  identificationFile: null,
+  nextOfKinName: '',
+  nextOfKinAddress: '',
+  nextOfKinRelationship: '',
+  nextOfKinPhoneNumber: '',
+  nextOfKinOccupation: '',
+  nextOfKinOfficeAddress: '',
+  layoutName: '',
+  numberOfPlots: '',
+  proposedUse: '',
+  plotSize: '',
+  paymentTerms: '',
+  price: '',
+  price_per_plot: '',
+  plotId: '',
+  agreedToTerms: false,
+  signatureText: '',
+  signatureFile: null
+  // REMOVED: proposedType
+});
+  // Fetch all layout plans from backend
+  const fetchAllLayoutPlans = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/layout-plan/all");
+      const data = await res.json();
+      console.log("Layout plans response:", data);
+      
+      if (data.success) {
+        setAllLayoutPlans(data.data);
+        
+        // Set the first layout as current PDF if available
+        if (data.data.length > 0) {
+          setSelectedLayout(data.data[0]);
+          const fullUrl = `http://localhost:5000${data.data[0].file_url}`;
+          console.log("Setting current PDF URL:", fullUrl);
+          setCurrentPdf(fullUrl);
         }
-      } catch (err) {
-        console.error("Error fetching plots:", err);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching all layout plans:", error);
+    }
+  };
 
+  // Fetch plots from backend
+const fetchPlots = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/api/plots");
+    const data = await res.json();
+    
+    // Correct way to access plot IDs
+    console.log("Plots response:", data);
+    console.log("First plot ID:", data.data?.[0]?.id);
+    console.log("All plot IDs:", data.data?.map(plot => plot.id));
+    
+    if (data.success) {
+      setPlots(data.data.filter(plot => plot.status === "Available"));
+    }
+  } catch (err) {
+    console.error("Error fetching plots:", err);
+  }
+};
+  function onDocumentLoadSuccess({ numPages }) {
+    setNumPages(numPages);
+    setPageNumber(1);
+    setPdfError(null);
+  }
+
+  function onDocumentLoadError(error) {
+    console.error('Error loading PDF:', error);
+    setPdfError('Failed to load PDF document. Please try downloading the layout plan instead.');
+  }
+
+  useEffect(() => {
     fetchPlots();
+    fetchAllLayoutPlans();
   }, []);
 
-  // Field length validation based on database constraints
+  // Handle layout selection
+  const handleLayoutSelect = (layout) => {
+    setSelectedLayout(layout);
+    const fullUrl = `http://localhost:5000${layout.file_url}`;
+    console.log("Setting selected layout PDF URL:", fullUrl);
+    setCurrentPdf(fullUrl);
+    setShowLayoutModal(false);
+  };
+
+  const handleViewPdf = (fileUrl) => {
+    console.log("Viewing PDF:", fileUrl);
+    setCurrentPdf(fileUrl);
+    setShowPdfModal(true);
+    setPageNumber(1);
+    setPdfError(null);
+  };
+
+  const handleClosePdfModal = () => {
+    setShowPdfModal(false);
+    setPdfError(null);
+  };
+
+  const handleCloseLayoutModal = () => {
+    setShowLayoutModal(false);
+  };
+
+  // Download layout plan
+  const handleDownloadLayout = async (layout) => {
+    try {
+      console.log("Downloading layout:", layout);
+      
+      if (!layout || !layout.id) {
+        alert('Invalid layout plan data');
+        return;
+      }
+
+      const token = localStorage.getItem("userToken");
+      const response = await fetch(`http://localhost:5000/api/layout-plan/download/${layout.id}`, {
+        method: 'GET',
+        headers: token ? { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        } : {},
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        
+        const contentDisposition = response.headers.get('content-disposition');
+        let filename = layout.filename || 'layout-plan';
+        
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+        
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to download layout plan: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("Error downloading layout plan:", error);
+      alert('Download failed. Try again later.');
+    }
+  };
+
+const handlePlotSelection = (plot) => {
+  console.log("Selected plot:", plot);
+  
+  // Check if plot is already selected
+  const isAlreadySelected = formData.selectedPlots.some(p => p.id === plot.id);
+  
+  let updatedSelection;
+  
+  if (isAlreadySelected) {
+    // Remove plot if already selected
+    updatedSelection = formData.selectedPlots.filter(p => p.id !== plot.id);
+  } else {
+    // Add plot if not selected
+    updatedSelection = [...formData.selectedPlots, plot];
+  }
+
+  setFormData(prev => ({
+    ...prev,
+    selectedPlots: updatedSelection,
+    plotId: updatedSelection.length > 0 ? updatedSelection[0].id : '',
+    layoutName: updatedSelection.length ? updatedSelection[0].location : "",
+    numberOfPlots: updatedSelection.length,
+    plotSize: updatedSelection.map((p) => p.dimension).join(", "),
+    price: updatedSelection.map((p) => parseFloat(p.price)).join(", ")
+  }));
+};
+
+  const handleRemovePlotSelection = () => {
+    setFormData(prevData => ({
+      ...prevData,
+      plotId: '',
+      layoutName: '',
+      plotSize: '',
+      price: ''
+    }));
+  };
+
   const fieldMaxLengths = {
     title: 10,
     name: 100,
@@ -96,102 +256,29 @@ const SubscriptionForm = () => {
     stateOfOrigin: 50,
     lga: 50,
     sex: 10,
-    telephone: 20,
+    phoneNumber: 20,
     nationality: 50,
-    officeNumber: 20,
     homeNumber: 20,
-    postalAddress: 200,
     email: 100,
     identification: 50,
-    utilityBill: 50,
     nextOfKinName: 100,
     nextOfKinAddress: 200,
     nextOfKinRelationship: 50,
-    nextOfKinTel: 20,
+    nextOfKinPhoneNumber: 20,
     nextOfKinOccupation: 50,
     nextOfKinOfficeAddress: 200,
-    nextOfKinEmail: 100,
-    estateName: 100,
+    layoutName: 100,
     numberOfPlots: 10,
     proposedUse: 50,
     proposedType: 50,
     plotSize: 20,
     paymentTerms: 50,
-    altContactName: 100,
-    altContactAddress: 200,
-    altContactRelationship: 50,
-    altContactTel: 20,
-    altContactEmail: 100,
-    referralAgentName: 100,
-    referralAgentContact: 20,
+    price: 20,
     signatureText: 100
   };
 
   const validateStep = (step) => {
     const newErrors = {};
-    
-    if (step === 1) {
-      if (!formData.title) newErrors.title = 'Title is required';
-      if (!formData.name) newErrors.name = 'Full name is required';
-      if (formData.name && formData.name.length > fieldMaxLengths.name) 
-        newErrors.name = `Name must be less than ${fieldMaxLengths.name} characters`;
-      if (!formData.residentialAddress) newErrors.residentialAddress = 'Residential address is required';
-      if (!formData.occupation) newErrors.occupation = 'Occupation is required';
-      if (formData.occupation && formData.occupation.length > fieldMaxLengths.occupation) 
-        newErrors.occupation = `Occupation must be less than ${fieldMaxLengths.occupation} characters`;
-      if (!formData.dob) newErrors.dob = 'Date of birth is required';
-      if (!formData.stateOfOrigin) newErrors.stateOfOrigin = 'State of origin is required';
-      if (!formData.lga) newErrors.lga = 'LGA is required';
-      if (!formData.sex) newErrors.sex = 'Sex is required';
-      if (!formData.telephone) newErrors.telephone = 'Telephone is required';
-      if (formData.telephone && formData.telephone.length > fieldMaxLengths.telephone) 
-        newErrors.telephone = `Telephone must be less than ${fieldMaxLengths.telephone} characters`;
-      if (!formData.nationality) newErrors.nationality = 'Nationality is required';
-      if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) 
-        newErrors.email = 'Email is invalid';
-      if (!formData.identification) newErrors.identification = 'Identification is required';
-      if (!formData.utilityBill) newErrors.utilityBill = 'Utility bill is required';
-      if (!formData.passportPhoto) newErrors.passportPhoto = 'Passport photo is required';
-      if (!formData.identificationFile) newErrors.identificationFile = 'Identification document is required';
-      if (!formData.utilityBillFile) newErrors.utilityBillFile = 'Utility bill document is required';
-    }
-    
-    if (step === 2) {
-      if (!formData.nextOfKinName) newErrors.nextOfKinName = 'Next of kin name is required';
-      if (!formData.nextOfKinAddress) newErrors.nextOfKinAddress = 'Next of kin address is required';
-      if (!formData.nextOfKinRelationship) newErrors.nextOfKinRelationship = 'Relationship is required';
-      if (!formData.nextOfKinTel) newErrors.nextOfKinTel = 'Next of kin telephone is required';
-      if (formData.nextOfKinTel && formData.nextOfKinTel.length > fieldMaxLengths.nextOfKinTel) 
-        newErrors.nextOfKinTel = `Telephone must be less than ${fieldMaxLengths.nextOfKinTel} characters`;
-      if (!formData.nextOfKinOccupation) newErrors.nextOfKinOccupation = 'Next of kin occupation is required';
-      if (formData.nextOfKinEmail && !/\S+@\S+\.\S+/.test(formData.nextOfKinEmail)) 
-        newErrors.nextOfKinEmail = 'Email is invalid';
-    }
-    
-    if (step === 3) {
-      if (!formData.estateName) newErrors.estateName = 'Estate name is required';
-      if (!formData.numberOfPlots) newErrors.numberOfPlots = 'Number of plots is required';
-      if (!formData.proposedUse) newErrors.proposedUse = 'Proposed use is required';
-      if (!formData.proposedType) newErrors.proposedType = 'Proposed type is required';
-      if (!formData.plotSize) newErrors.plotSize = 'Plot size is required';
-      if (!formData.paymentTerms) newErrors.paymentTerms = 'Payment terms is required';
-    }
-    
-    if (step === 4) {
-      if (!formData.altContactName) newErrors.altContactName = 'Alternative contact name is required';
-      if (!formData.altContactAddress) newErrors.altContactAddress = 'Alternative contact address is required';
-      if (!formData.altContactTel) newErrors.altContactTel = 'Alternative contact telephone is required';
-      if (formData.altContactEmail && !/\S+@\S+\.\S+/.test(formData.altContactEmail)) 
-        newErrors.altContactEmail = 'Email is invalid';
-    }
-    
-    if (step === 5) {
-      if (!formData.agreedToTerms) newErrors.agreedToTerms = 'You must agree to the terms and conditions';
-      if (!formData.signatureText) newErrors.signatureText = 'Signature is required';
-      if (formData.signatureText && formData.signatureText.length > fieldMaxLengths.signatureText) 
-        newErrors.signatureText = `Signature must be less than ${fieldMaxLengths.signatureText} characters`;
-    }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -199,10 +286,9 @@ const SubscriptionForm = () => {
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     
-    // Apply field length restrictions
     if (type !== 'file' && type !== 'checkbox' && fieldMaxLengths[name]) {
       if (value.length > fieldMaxLengths[name]) {
-        return; // Don't update if exceeds max length
+        return;
       }
     }
     
@@ -214,7 +300,6 @@ const SubscriptionForm = () => {
       setFormData({ ...formData, [name]: value });
     }
     
-    // Clear error when field is updated
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -229,24 +314,38 @@ const SubscriptionForm = () => {
   const handlePrev = () => {
     setStep(step - 1);
   };
-
-
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
-  
-  if (!validateStep(5)) {
-    return;
-  }
+
+  if (!validateStep(3)) return;
 
   setIsSubmitting(true);
 
   try {
     const data = new FormData();
 
-    // Append all formData fields
+  
+
+    // Append ALL selected plot IDs
+    formData.selectedPlots.forEach((plot, index) => {
+      data.append(`selectedPlotIds[${index}]`, plot.id);
+   
+    });
+
+    // ✅ FIXED: Append price_per_plot ONLY ONCE and ensure it's a single value
+    if (formData.price_per_plot) {
+      // If it's an array, take the first value only
+      const priceValue = Array.isArray(formData.price_per_plot) 
+        ? formData.price_per_plot[0] 
+        : formData.price_per_plot;
+      
+      data.append('price_per_plot', priceValue);
+    
+    }
+
+    // Append all other form data
     for (const key in formData) {
-      if (formData[key] !== null && formData[key] !== undefined) {
-        // For file inputs, we need to handle them differently
+      if (key !== 'selectedPlots' && key !== 'price_per_plot' && formData[key] !== null && formData[key] !== undefined) {
         if (formData[key] instanceof File) {
           data.append(key, formData[key], formData[key].name);
         } else {
@@ -255,70 +354,31 @@ const SubscriptionForm = () => {
       }
     }
 
+    // Log all FormData entries for debugging
+    console.log("All FormData entries:");
+    for (let pair of data.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+
+    const token = localStorage.getItem("userToken");
+
     const response = await fetch("http://localhost:5000/api/subscriptions", {
       method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: data,
     });
 
     const result = await response.json();
-console.log("Submitting with plotId:", formData.plotId);
 
     if (result.success) {
-      // Set success state FIRST
       setSubmitSuccess(true);
+      console.log("✅ Subscription created successfully:", result);
       
-      // Reset form
-      setFormData({
-        title: '',
-        name: '',
-        residentialAddress: '',
-        occupation: '',
-        officeAddress: '',
-        dob: '',
-        stateOfOrigin: '',
-        lga: '',
-        sex: '',
-        telephone: '',
-        nationality: '',
-        officeNumber: '',
-        homeNumber: '',
-        postalAddress: '',
-        email: '',
-        identification: '',
-        utilityBill: '',
-        passportPhoto: null,
-        identificationFile: null,
-        utilityBillFile: null,
-        nextOfKinName: '',
-        nextOfKinAddress: '',
-        nextOfKinRelationship: '',
-        nextOfKinTel: '',
-        nextOfKinOccupation: '',
-        nextOfKinOfficeAddress: '',
-        nextOfKinEmail: '',
-        estateName: '',
-        numberOfPlots: '',
-        proposedUse: '',
-        proposedType: '',
-        plotSize: '',
-        paymentTerms: '',
-        altContactName: '',
-        altContactAddress: '',
-        altContactRelationship: '',
-        altContactTel: '',
-        altContactEmail: '',
-        referralAgentName: '',
-        referralAgentContact: '',
-        agreedToTerms: false,
-        signatureText: '',
-        signatureFile: null
-      });
-      setErrors({});
-      
-      // Redirect to profile page after 3 seconds
+      // ✅ REDIRECT TO USER DASHBOARD AFTER SUCCESS
       setTimeout(() => {
-        navigate('/profile');
-      }, 3000);
+        window.location.href = '/dashboard'; // Adjust path as needed
+      }, 2000);
+      
     } else {
       alert("❌ Failed to create subscription: " + (result.message || "Unknown error"));
     }
@@ -329,16 +389,15 @@ console.log("Submitting with plotId:", formData.plotId);
     setIsSubmitting(false);
   }
 };
-
-   const TermsModal = () => {
-    if (!showModal) return null;
+  const TermsModal = () => {
+    if (!showTermsModal) return null;
     
     return (
-      <div className="modal-overlay" onClick={() => setShowModal(false)}>
+      <div className="modal-overlay" onClick={() => setShowTermsModal(false)}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
             <h3>Terms and Conditions</h3>
-            <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            <button className="modal-close" onClick={() => setShowTermsModal(false)}>×</button>
           </div>
           <div className="modal-body">
             <div className="terms-content">
@@ -371,7 +430,7 @@ console.log("Submitting with plotId:", formData.plotId);
                   </ul>
                 </li>
                 
-                <li><strong>ALLocation OF PLOT</strong> - Final allocation and title documents will only be given after full payment.</li>
+                <li><strong>ALLOCATION OF PLOT</strong> - Final allocation and title documents will only be given after full payment.</li>
                 
                 <li>
                   <strong>TRANSFER OF OWNERSHIP</strong>
@@ -399,14 +458,12 @@ console.log("Submitting with plotId:", formData.plotId);
                     <li>No commercial use without approval.</li>
                   </ul>
                 </li>
-                
                 <li>
                   <strong>NON-BUILDING PLAN</strong>
                   <ul>
                     <li>Buyer may hold land undeveloped, but must keep it clean and fenced.</li>
                   </ul>
                 </li>
-                
                 <li>
                   <strong>MENTAL INCAPACITY</strong>
                   <ul>
@@ -437,14 +494,13 @@ console.log("Submitting with plotId:", formData.plotId);
             </div>
           </div>
           <div className="modal-footer">
-            <button className="modal-button" onClick={() => setShowModal(false)}>Close</button>
+            <button className="modal-button" onClick={() => setShowTermsModal(false)}>Close</button>
           </div>
         </div>
       </div>
     );
   };
 
-  // Success message component
   const SuccessMessage = () => (
     <div className="success-overlay">
       <div className="success-message">
@@ -461,7 +517,7 @@ console.log("Submitting with plotId:", formData.plotId);
     return <SuccessMessage />;
   }
 
-   return (
+  return (
     <div className="subscription-form-container">
       <div className="form-overlay">
         <form onSubmit={handleSubmit}>
@@ -471,7 +527,7 @@ console.log("Submitting with plotId:", formData.plotId);
           </div>
 
           <div className="progress-indicator">
-            {[1, 2, 3, 4, 5].map((num) => (
+            {[1, 2, 3].map((num) => (
               <div key={num} className={`step ${step === num ? 'active' : ''}`}>
                 {num}
               </div>
@@ -481,8 +537,7 @@ console.log("Submitting with plotId:", formData.plotId);
           {/* Step 1: Subscriber's Data */}
           {step === 1 && (
             <div className="form-section">
-              <h4>Subscriber's Data</h4>
-              
+              <h4>Subscriber's Data</h4>        
               <div className="form-row">
                 <div className="form-group">
                   <label>Title *</label>
@@ -598,16 +653,16 @@ console.log("Submitting with plotId:", formData.plotId);
               
               <div className="form-row">
                 <div className="form-group">
-                  <label>Telephone *</label>
+                  <label>Phone Number *</label>
                   <input 
                     type="tel" 
-                    name="telephone" 
-                    value={formData.telephone} 
+                    name="phoneNumber" 
+                    value={formData.phoneNumber} 
                     onChange={handleChange} 
-                    maxLength={fieldMaxLengths.telephone}
+                    maxLength={fieldMaxLengths.phoneNumber}
                     required 
                   />
-                  {errors.telephone && <span className="error-text">{errors.telephone}</span>}
+                  {errors.phoneNumber && <span className="error-text">{errors.phoneNumber}</span>}
                 </div>
                 
                 <div className="form-group">
@@ -626,17 +681,6 @@ console.log("Submitting with plotId:", formData.plotId);
               
               <div className="form-row">
                 <div className="form-group">
-                  <label>Office Number</label>
-                  <input 
-                    type="tel" 
-                    name="officeNumber" 
-                    value={formData.officeNumber} 
-                    onChange={handleChange} 
-                    maxLength={fieldMaxLengths.officeNumber}
-                  />
-                </div>
-                
-                <div className="form-group">
                   <label>Home Number</label>
                   <input 
                     type="tel" 
@@ -644,19 +688,6 @@ console.log("Submitting with plotId:", formData.plotId);
                     value={formData.homeNumber} 
                     onChange={handleChange} 
                     maxLength={fieldMaxLengths.homeNumber}
-                  />
-                </div>
-              </div>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Postal Address</label>
-                  <input 
-                    type="text" 
-                    name="postalAddress" 
-                    value={formData.postalAddress} 
-                    onChange={handleChange} 
-                    maxLength={fieldMaxLengths.postalAddress}
                   />
                 </div>
                 
@@ -674,29 +705,16 @@ console.log("Submitting with plotId:", formData.plotId);
                 </div>
               </div>
               
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Means of Identification *</label>
-                  <select name="identification" value={formData.identification} onChange={handleChange} required>
-                    <option value="">Select ID</option>
-                    <option value="National ID">National ID</option>
-                    <option value="Driver's License">Driver's License</option>
-                    <option value="International Passport">International Passport</option>
-                    <option value="Voter's Card">Voter's Card</option>
-                  </select>
-                  {errors.identification && <span className="error-text">{errors.identification}</span>}
-                </div>
-                
-                <div className="form-group">
-                  <label>Utility Bill *</label>
-                  <select name="utilityBill" value={formData.utilityBill} onChange={handleChange} required>
-                    <option value="">Select Utility Bill</option>
-                    <option value="Electricity Bill">Electricity Bill</option>
-                    <option value="Water Bill">Water Bill</option>
-                    <option value="Waste Bill">Waste Bill</option>
-                  </select>
-                  {errors.utilityBill && <span className="error-text">{errors.utilityBill}</span>}
-                </div>
+              <div className="form-group">
+                <label>Means of Identification *</label>
+                <select name="identification" value={formData.identification} onChange={handleChange} required>
+                  <option value="">Select ID</option>
+                  <option value="National ID">National ID</option>
+                  <option value="Driver's License">Driver's License</option>
+                  <option value="International Passport">International Passport</option>
+                  <option value="Voter's Card">Voter's Card</option>
+                </select>
+                {errors.identification && <span className="error-text">{errors.identification}</span>}
               </div>
               
               <div className="form-row">
@@ -713,13 +731,6 @@ console.log("Submitting with plotId:", formData.plotId);
                   <small>Upload a clear copy of your ID</small>
                   {errors.identificationFile && <span className="error-text">{errors.identificationFile}</span>}
                 </div>
-              </div>
-              
-              <div className="form-group">
-                <label>Utility Bill Document *</label>
-                <input type="file" name="utilityBillFile" onChange={handleChange} accept="image/*,.pdf" required />
-                <small>Upload a clear copy of your utility bill</small>
-                {errors.utilityBillFile && <span className="error-text">{errors.utilityBillFile}</span>}
               </div>
             </div>
           )}
@@ -770,16 +781,16 @@ console.log("Submitting with plotId:", formData.plotId);
                 </div>
                 
                 <div className="form-group">
-                  <label>Telephone *</label>
+                  <label>Phone Number *</label>
                   <input 
                     type="tel" 
-                    name="nextOfKinTel" 
-                    value={formData.nextOfKinTel} 
+                    name="nextOfKinPhoneNumber" 
+                    value={formData.nextOfKinPhoneNumber} 
                     onChange={handleChange} 
-                    maxLength={fieldMaxLengths.nextOfKinTel}
+                    maxLength={fieldMaxLengths.nextOfKinPhoneNumber}
                     required 
                   />
-                  {errors.nextOfKinTel && <span className="error-text">{errors.nextOfKinTel}</span>}
+                  {errors.nextOfKinPhoneNumber && <span className="error-text">{errors.nextOfKinPhoneNumber}</span>}
                 </div>
               </div>
               
@@ -808,83 +819,224 @@ console.log("Submitting with plotId:", formData.plotId);
                   />
                 </div>
               </div>
-              
-              <div className="form-group">
-                <label>Email</label>
-                <input 
-                  type="email" 
-                  name="nextOfKinEmail" 
-                  value={formData.nextOfKinEmail} 
-                  onChange={handleChange} 
-                  maxLength={fieldMaxLengths.nextOfKinEmail}
-                />
-                {errors.nextOfKinEmail && <span className="error-text">{errors.nextOfKinEmail}</span>}
-              </div>
             </div>
           )}
-
-          {/* Step 3: Plot Information */}
+{/* Step 3: Plot Information & Agreement */}
 {step === 3 && (
   <div className="form-section">
-    <h4>Plot Information</h4>
+    <h4>Plot Information & Agreement</h4>
 
-    {/* Select Plot (from API) */}
-    <div className="form-group">
-      <label>Select Plot *</label>
- <select
-  name="plotId"
-  value={formData.plotId}
-  onChange={(e) => {
-    const plotId = e.target.value;
-    const selected = plots.find((p) => p.id === parseInt(plotId));
-    setFormData({
-      ...formData,
-      plotId, // ✅ match DB field
-      estateName: selected?.location || "",
-      numberOfPlots: 1, // default 1
-      proposedUse: "",
-      proposedType: "",
-      plotSize: selected?.dimension || "",
-      price: selected?.price || "",
-      paymentTerms: "",
-    });
-
-    // ✅ log for debugging
-    console.log("Selected plotId:", plotId, "Full plot:", selected);
-  }}
-  required
->
-  <option value="">-- Select Available Plot --</option>
-  {plots.map((plot) => (
-    <option key={plot.id} value={plot.id}>
-      {plot.number} - {plot.location} ({plot.dimension}) - ₦{plot.price}
-    </option>
-  ))}
-</select>
-
-      {errors.selectedPlot && (
-        <span className="error-text">{errors.selectedPlot}</span>
-      )}
+    {/* Layout Plan Selection Section */}
+    <div className="layout-plan-section">
+      <div className="form-group">
+        <label>Estate Layout Plan *</label>
+        <div className="layout-plan-selector">
+          {selectedLayout ? (
+            <div className="selected-layout">
+              <div className="layout-info">
+                <strong>{selectedLayout.layout_name}</strong>
+                <span>File: {selectedLayout.filename}</span>
+                <span>Size: {(selectedLayout.file_size / 1024 / 1024).toFixed(2)} MB</span>
+                <span>Uploaded: {new Date(selectedLayout.created_at).toLocaleDateString()}</span>
+              </div>
+              <div className="layout-actions">
+                <button 
+                  type="button" 
+                  className="btn-view-layout"
+                  onClick={() => handleViewPdf(`http://localhost:5000${selectedLayout.file_url}`)}
+                >
+                  <FiEye className="icon" /> View
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-download-layout"
+                  onClick={() => handleDownloadLayout(selectedLayout)}
+                >
+                  <FiDownload className="icon" /> Download
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-change-layout"
+                  onClick={() => setShowLayoutModal(true)}
+                >
+                  Change Layout
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="no-layout">
+              <p>No layout plan selected</p>
+              <button 
+                type="button" 
+                className="btn-select-layout"
+                onClick={() => setShowLayoutModal(true)}
+              >
+                Select Layout Plan
+              </button>
+            </div>  
+          )}
+        </div>
+        <small>Select an estate layout plan to view available plots</small>
+      </div>
     </div>
 
-    {/* Number of Plots & Proposed Use */}
-    <div className="form-row">
-      <div className="form-group">
-        <label>Number of Plots *</label>
-        <input
-          type="number"
-          name="numberOfPlots"
-          value={formData.numberOfPlots}
-          onChange={handleChange}
-          min="1"
-          maxLength={fieldMaxLengths.numberOfPlots}
-          required
-        />
-        {errors.numberOfPlots && (
-          <span className="error-text">{errors.numberOfPlots}</span>
+    {/* Plot Selection */}
+    <div className="form-group">
+      <label>Select Plot(s) *</label>
+
+      <div className="plots-list-container">
+        {plots.length === 0 ? (
+          <p>Loading available plots...</p>
+        ) : (
+          <>
+            <ul className="plots-list">
+              {plots.slice(0, visiblePlotsCount).map((plot) => {
+                const isSelected = formData.selectedPlots.some(
+                  (p) => p.id === plot.id
+                );
+
+                return (
+                  <li
+                    key={plot.id}
+                    className={`plot-item ${isSelected ? "selected" : ""}`}
+                    onClick={() => {
+                      let updatedSelection;
+
+                      if (isSelected) {
+                        // Remove plot
+                        updatedSelection = formData.selectedPlots.filter(
+                          (p) => p.id !== plot.id
+                        );
+                      } else {
+                        // Add plot
+                        updatedSelection = [...formData.selectedPlots, plot];
+                      }
+
+                      // Calculate price per plot
+                      const pricePerPlot = updatedSelection.length > 1 
+                        ? updatedSelection.map(p => parseFloat(p.price)).join(", ")
+                        : updatedSelection.length === 1 
+                          ? parseFloat(updatedSelection[0].price)
+                          : '';
+
+                      // Update form data with the new selection
+                      setFormData(prev => ({
+                        ...prev,
+                        selectedPlots: updatedSelection,
+                        layoutName: updatedSelection.length ? updatedSelection[0].location : "",
+                        numberOfPlots: updatedSelection.length,
+                        plotSize: updatedSelection.map((p) => p.dimension).join(", "),
+                        price: updatedSelection.reduce((sum, p) => sum + parseFloat(p.price), 0),
+                        price_per_plot: pricePerPlot, // Set price per plot
+                        plotId: updatedSelection.length > 0 ? updatedSelection[0].id : ''
+                      }));
+                    }}
+                  >
+                    <div className="plot-main">
+                      <span className="plot-number">{plot.number}</span>
+                      <span className="plot-estate">{plot.location}</span>
+                      <span className="plot-price">
+                        ₦{parseFloat(plot.price).toLocaleString()}
+                      </span>
+                      <span className={`plot-status ${plot.status.toLowerCase()}`}>
+                        {plot.status}
+                      </span>
+                    </div>
+                    {isSelected && <FiCheck className="check-icon" />}
+                  </li>
+                );
+              })}
+            </ul>
+
+            {plots.length > initialVisiblePlots && (
+              <div className="plots-toggle-section">
+                <button
+                  type="button"
+                  className="btn-show-more"
+                  onClick={() => {
+                    if (visiblePlotsCount >= plots.length) {
+                      setVisiblePlotsCount(initialVisiblePlots);
+                    } else {
+                      setVisiblePlotsCount(plots.length);
+                    }
+                  }}
+                >
+                  {visiblePlotsCount >= plots.length ? (
+                    <>
+                      <FiChevronUp className="icon" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <FiChevronDown className="icon" />
+                      Show More ({plots.length - visiblePlotsCount} more plots)
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
+      {/* Summary of selected plots */}
+      {formData.selectedPlots.length > 0 && (
+        <div className="selected-plots-summary">
+          <h5>Selected Plots ({formData.selectedPlots.length})</h5>
+          <p>
+            <strong>Plots:</strong>{" "}
+            {formData.selectedPlots.map((p) => p.number).join(", ")}
+          </p>
+          <p>
+            <strong>Layout Name:</strong> {formData.layoutName}
+          </p>
+          <p>
+            <strong>Prices:</strong> {formData.selectedPlots
+              .map((p) => `₦${parseFloat(p.price).toLocaleString()}`)
+              .join(", ")}
+          </p>
+          <p>
+            <strong>Total Price:</strong> ₦
+            {formData.selectedPlots
+              .reduce((sum, p) => sum + parseFloat(p.price), 0)
+              .toLocaleString()}
+          </p>
+        </div>
+      )}
+
+      {errors.selectedPlots && (
+        <span className="error-text">{errors.selectedPlots}</span>
+      )}
+    </div>
+
+    {/* Plot Details */}
+    <div className="form-row">
+      <div className="form-group">
+        <label>Number of Selected Plots *</label>
+        <input
+          type="number"
+          name="numberOfPlots"
+          value={formData.selectedPlots.length}
+          readOnly
+          className="readonly-input"
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Layout Name *</label>
+        <input
+          type="text"
+          name="layoutName"
+          value={formData.layoutName}
+          onChange={handleChange}
+          required
+          placeholder="Layout name will auto-fill when plots are selected"
+        />
+        {errors.layoutName && <span className="error-text">{errors.layoutName}</span>}
+      </div>
+    </div>
+
+    <div className="form-row">
       <div className="form-group">
         <label>Proposed Use *</label>
         <select
@@ -899,33 +1051,13 @@ console.log("Submitting with plotId:", formData.plotId);
           <option value="Industrial">Industrial</option>
           <option value="Agricultural">Agricultural</option>
         </select>
-        {errors.proposedUse && (
-          <span className="error-text">{errors.proposedUse}</span>
-        )}
+        {errors.proposedUse && <span className="error-text">{errors.proposedUse}</span>}
       </div>
+
+      {/* REMOVED: Proposed Type Field */}
     </div>
 
-    {/* Proposed Type, Plot Size & Price */}
     <div className="form-row">
-      <div className="form-group">
-        <label>Proposed Type *</label>
-        <select
-          name="proposedType"
-          value={formData.proposedType}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Type</option>
-          <option value="Bungalow">Bungalow</option>
-          <option value="Duplex">Duplex</option>
-          <option value="Block of Flats">Block of Flats</option>
-          <option value="Warehouse">Warehouse</option>
-        </select>
-        {errors.proposedType && (
-          <span className="error-text">{errors.proposedType}</span>
-        )}
-      </div>
-
       <div className="form-group">
         <label>Plot Size *</label>
         <input
@@ -933,193 +1065,86 @@ console.log("Submitting with plotId:", formData.plotId);
           name="plotSize"
           value={formData.plotSize}
           onChange={handleChange}
-          maxLength={fieldMaxLengths.plotSize}
           required
-          readOnly
+          placeholder="Plot size will auto-fill when plots are selected"
         />
-        {errors.plotSize && (
-          <span className="error-text">{errors.plotSize}</span>
-        )}
+        {errors.plotSize && <span className="error-text">{errors.plotSize}</span>}
       </div>
 
       <div className="form-group">
-        <label>Price (₦)</label>
-        <input
-          type="text"
-          name="price"
-          value={formData.price}
-          readOnly
-        />
+        <label>Payment Terms *</label>
+        <select
+          name="paymentTerms"
+          value={formData.paymentTerms}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Payment Terms</option>
+          <option value="3 Months">3 Months</option>
+          <option value="12 Months">12 Months</option>
+          <option value="18 Months">18 Months</option>
+          <option value="24 Months">24 Months</option>
+          <option value="30 Months">30 Months</option>
+        </select>
+        {errors.paymentTerms && <span className="error-text">{errors.paymentTerms}</span>}
       </div>
     </div>
 
-    {/* Payment Terms */}
     <div className="form-group">
-      <label>Payment Terms *</label>
-      <select
-        name="paymentTerms"
-        value={formData.paymentTerms}
-        onChange={handleChange}
-        required
-      >
-        <option value="">Select Payment Terms</option>
-        <option value="Full Payment">Full Payment</option>
-        <option value="Installment - 3 Months">Installment - 3 Months</option>
-        <option value="Installment - 6 Months">Installment - 6 Months</option>
-        <option value="Installment - 12 Months">Installment - 12 Months</option>
-      </select>
-      {errors.paymentTerms && (
-        <span className="error-text">{errors.paymentTerms}</span>
-      )}
+      <label>Total Price (₦)</label>
+      <input
+        type="text"
+        value={formData.selectedPlots
+          .reduce((sum, plot) => sum + parseFloat(plot.price || 0), 0)
+          .toLocaleString() || '0'}
+        readOnly
+        className="total-price-display"
+      />
+    </div>
+
+    {/* Agreement Section */}
+    <div className="agreement-section">
+      <div className="terms-preview">
+        <p>By submitting this form, you agree to our Terms and Conditions</p>
+        <button type="button" className="view-terms-btn" onClick={() => setShowTermsModal(true)}>
+          View Terms and Conditions
+        </button>
+      </div>
+      
+      <div className="form-group checkbox-label">
+        <input 
+          type="checkbox" 
+          name="agreedToTerms" 
+          checked={formData.agreedToTerms} 
+          onChange={handleChange} 
+          required 
+        />
+        <label>I agree to the terms and conditions</label>
+        {errors.agreedToTerms && <span className="error-text">{errors.agreedToTerms}</span>}
+      </div>
+      
+      <div className="form-group">
+        <label>Signature *</label>
+        <input 
+          type="text" 
+          name="signatureText" 
+          value={formData.signatureText} 
+          onChange={handleChange} 
+          placeholder="Type your full name as signature" 
+          maxLength={fieldMaxLengths.signatureText}
+          required 
+        />
+        {errors.signatureText && <span className="error-text">{errors.signatureText}</span>}
+      </div>
+      
+      <div className="form-group">
+        <label>Upload Signature (Optional)</label>
+        <input type="file" name="signatureFile" onChange={handleChange} accept="image/*" />
+        <small>Upload an image of your signature if preferred</small>
+      </div>
     </div>
   </div>
 )}
-
-
-
-          {/* Step 4: Alternative Contact & Referral */}
-          {step === 4 && (
-            <div className="form-section">
-              <h4>Alternative Contact Person</h4>
-              
-              <div className="form-group">
-                <label>Full Name *</label>
-                <input 
-                  type="text" 
-                  name="altContactName" 
-                  value={formData.altContactName} 
-                  onChange={handleChange} 
-                  maxLength={fieldMaxLengths.altContactName}
-                  required 
-                />
-                {errors.altContactName && <span className="error-text">{errors.altContactName}</span>}
-              </div>
-              
-              <div className="form-group">
-                <label>Address *</label>
-                <input 
-                  type="text" 
-                  name="altContactAddress" 
-                  value={formData.altContactAddress} 
-                  onChange={handleChange} 
-                  maxLength={fieldMaxLengths.altContactAddress}
-                  required 
-                />
-                {errors.altContactAddress && <span className="error-text">{errors.altContactAddress}</span>}
-              </div>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Relationship</label>
-                  <input 
-                    type="text" 
-                    name="altContactRelationship" 
-                    value={formData.altContactRelationship} 
-                    onChange={handleChange} 
-                    maxLength={fieldMaxLengths.altContactRelationship}
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Telephone *</label>
-                  <input 
-                    type="tel" 
-                    name="altContactTel" 
-                    value={formData.altContactTel} 
-                    onChange={handleChange} 
-                    maxLength={fieldMaxLengths.altContactTel}
-                    required 
-                  />
-                  {errors.altContactTel && <span className="error-text">{errors.altContactTel}</span>}
-                </div>
-              </div>
-              
-              <div className="form-group">
-                <label>Email</label>
-                <input 
-                  type="email" 
-                  name="altContactEmail" 
-                  value={formData.altContactEmail} 
-                  onChange={handleChange} 
-                  maxLength={fieldMaxLengths.altContactEmail}
-                />
-                {errors.altContactEmail && <span className="error-text">{errors.altContactEmail}</span>}
-              </div>
-              
-              <h4 style={{marginTop: '30px'}}>Referral Information</h4>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Referral Agent Name</label>
-                  <input 
-                    type="text" 
-                    name="referralAgentName" 
-                    value={formData.referralAgentName} 
-                    onChange={handleChange} 
-                    maxLength={fieldMaxLengths.referralAgentName}
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Referral Agent Contact</label>
-                  <input 
-                    type="text" 
-                    name="referralAgentContact" 
-                    value={formData.referralAgentContact} 
-                    onChange={handleChange} 
-                    maxLength={fieldMaxLengths.referralAgentContact}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Agreement */}
-          {step === 5 && (
-            <div className="form-section">
-              <h4>Agreement</h4>
-              
-              <div className="terms-preview">
-                <p>By submitting this form, you agree to our Terms and Conditions</p>
-                <button type="button" className="view-terms-btn" onClick={() => setShowModal(true)}>
-                  View Terms and Conditions
-                </button>
-              </div>
-              
-              <div className="form-group checkbox-label">
-                <input 
-                  type="checkbox" 
-                  name="agreedToTerms" 
-                  checked={formData.agreedToTerms} 
-                  onChange={handleChange} 
-                  required 
-                />
-                <label>I agree to the terms and conditions</label>
-                {errors.agreedToTerms && <span className="error-text">{errors.agreedToTerms}</span>}
-              </div>
-              
-              <div className="form-group">
-                <label>Signature *</label>
-                <input 
-                  type="text" 
-                  name="signatureText" 
-                  value={formData.signatureText} 
-                  onChange={handleChange} 
-                  placeholder="Type your full name as signature" 
-                  maxLength={fieldMaxLengths.signatureText}
-                  required 
-                />
-                {errors.signatureText && <span className="error-text">{errors.signatureText}</span>}
-              </div>
-              
-              <div className="form-group">
-                <label>Upload Signature (Optional)</label>
-                <input type="file" name="signatureFile" onChange={handleChange} accept="image/*" />
-                <small>Upload an image of your signature if preferred</small>
-              </div>
-            </div>
-          )}
-
           <div className="step-actions">
             {step > 1 ? (
               <button type="button" className="prev-btn" onClick={handlePrev}>
@@ -1129,26 +1154,141 @@ console.log("Submitting with plotId:", formData.plotId);
               <div></div>
             )}
             
-            {step < 5 ? (
+            {step < 3 ? (
               <button type="button" className="next-btn" onClick={handleNext}>
                 Next
               </button>
             ) : (
-              <button type="submit" className="submit-btn">
-                Submit Subscription
+              <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit Subscription'}
               </button>
             )}
           </div>
         </form>
 
-   <div className="company-footer">
-        <p><strong>MUSABAHA HOMES LTD.</strong></p>
-        <p>No. 015, City Plaza Along Ring Road Western Bypass Along Yankaba Road, Kano State.</p>
-        <p>📞 TEL: +2349084220705, +2349039108863, +2347038192719</p>
-        <p>📧 Email: musababahomesth@gmail.com</p>
-      </div>
+        <div className="company-footer">
+          <p><strong>MUSABAHA HOMES LTD.</strong></p>
+          <p>No. 015, City Plaza Along Ring Road Western Bypass Along Yankaba Road, Kano State.</p>
+          <p>📞 TEL: +2349084220705, +2349039108863, +2347038192719</p>
+          <p>📧 Email: musababahomesth@gmail.com</p>
+        </div>
       </div>
 
+      {/* Layout Selection Modal */}
+      {showLayoutModal && (
+        <div className="modal-overlay" onClick={handleCloseLayoutModal}>
+          <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3><FiFileText /> Select Estate Layout Plan</h3>
+              <button className="modal-close" onClick={handleCloseLayoutModal}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="layouts-grid">
+                {allLayoutPlans.map(layout => (
+                  <div key={layout.id} className="layout-card">
+                    <div className="layout-header">
+                      <h4>{layout.layout_name}</h4>
+                      {selectedLayout && selectedLayout.id === layout.id && (
+                        <span className="current-badge">Selected</span>
+                      )}
+                    </div>
+                    <div className="layout-details">
+                      <p><strong>File:</strong> {layout.filename}</p>
+                      <p><strong>Uploaded:</strong> {new Date(layout.created_at).toLocaleDateString()}</p>
+                      <p><strong>Size:</strong> {(layout.file_size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    <div className="layout-actions">
+                      <button 
+                        className="btn-select"
+                        onClick={() => handleLayoutSelect(layout)}
+                      >
+                        Select
+                      </button>
+                      <button 
+                        type="button" 
+                        className="btn-view-layout"
+                        onClick={() => handleViewPdf(`http://localhost:5000${layout.file_url}`)} 
+                      >
+                        <FiEye className="icon" /> View
+                      </button>
+                      <button 
+                        className="btn-download"
+                        onClick={() => handleDownloadLayout(layout)}
+                      >
+                        <FiDownload /> Download
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {allLayoutPlans.length === 0 && (
+                  <div className="no-layouts">
+                    <FiInfo className="icon" />
+                    <p>No layout plans available.</p>
+                    <p>Please contact the administrator for estate layout plans.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PDF View Modal */}
+      {showPdfModal && currentPdf && (
+        <div className="modal-overlay" onClick={handleClosePdfModal}>
+          <div className="modal-content pdf-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Layout Plan</h3>
+              <button className="modal-close" onClick={handleClosePdfModal}>×</button>
+            </div>
+            <div className="modal-body pdf-viewer">
+              {pdfError ? (
+                <div className="pdf-error">
+                  <FiInfo className="error-icon" />
+                  <p>{pdfError}</p>
+                  <button 
+                    className="btn-download-layout"
+                    onClick={() => selectedLayout && handleDownloadLayout(selectedLayout)}
+                  >
+                    <FiDownload className="icon" /> Download Layout Instead
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Document
+                    file={currentPdf}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                    onLoadError={onDocumentLoadError}
+                    loading={
+                      <div className="pdf-loading">
+                        <p>Loading PDF document...</p>
+                      </div>
+                    }
+                  >
+                    <Page pageNumber={pageNumber} />
+                  </Document>
+                  <div className="pdf-controls">
+                    <button 
+                      disabled={pageNumber <= 1}
+                      onClick={() => setPageNumber(prev => prev - 1)}
+                    >
+                      Previous
+                    </button>
+                    <span>Page {pageNumber} of {numPages || '?'}</span>
+                    <button 
+                      disabled={pageNumber >= (numPages || 1)}
+                      onClick={() => setPageNumber(prev => prev + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
       <TermsModal />
     </div>
   );

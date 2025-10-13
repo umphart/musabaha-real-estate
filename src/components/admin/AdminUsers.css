@@ -157,6 +157,7 @@
   opacity: 0.75;
 }
 
+
 /* Adjust status badge size for tighter layout */
 .status-badge {
   padding: 4px 10px;
@@ -535,8 +536,26 @@ th {
   box-shadow: 0 20px 40px rgba(0,0,0,0.2);
 }
 
+/* Fix for View User Modal */
 .modal-content.large {
-  max-width: 800px;
+  max-width: 500px;
+  max-height: 85vh; /* Reduced from 90vh to account for padding */
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body {
+  max-height: calc(85vh - 120px); /* Account for header and footer */
+  overflow-y: auto;
+  padding: 20px;
+  flex: 1;
+}
+
+/* Ensure payment sections are visible */
+.payment-section,
+.add-payment-section {
+  min-height: auto;
+  overflow: visible;
 }
 
 .modal-header {
@@ -666,8 +685,40 @@ th {
   font-size: 16px;
 }
 
+/* Payment section specific fixes */
 .payment-section {
-  margin-bottom: 28px;
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.add-payment-section {
+  margin: 20px 0;
+  padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* Ensure payment items are visible */
+.payment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.payment-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 15px;
 }
 
 .payment-section h4 {
@@ -1180,4 +1231,843 @@ th {
 .action-complete {
   color: #6b7280;
   font-style: italic;
+}/* Plot Selection Styles */
+.plots-selection-container {
+  margin-top: 10px;
+}
+
+.selected-plots-preview {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+  font-size: 14px;
+}
+
+.plot-selection-dropdown {
+  margin-top: 10px;
+}
+
+.plot-dropdown {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.plot-dropdown option {
+  padding: 8px;
+}
+
+.plot-dropdown option:checked {
+  background-color: #e3f2fd;
+  font-weight: bold;
+}
+
+.plot-dropdown option:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.selected-plots-info {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+}
+.plots-selection-container.scrollable-list {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 5px;
+  background: #fafafa;
+}
+
+.plot-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plot-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #fff;
+  transition: background 0.2s ease;
+  border: 1px solid #ddd;
+}.plots-selection-container {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.plots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.plot-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.plot-card:hover {
+  border-color: #007bff;
+}
+
+.plot-card.selected {
+  border-color: #28a745;
+  background-color: #f8fff9;
+}
+
+.plot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.plot-number {
+  font-weight: bold;
+}
+
+.plot-location {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.plot-price {
+  font-weight: bold;
+  color: #28a745;
+}
+
+.selected-plots-summary {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+.user-creation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border-left: 4px solid #007bff;
+}
+
+.form-section h4 {
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-hint {
+  color: #6c757d;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Plot Selection Styles */
+.plots-selection-container {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.plots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.plot-card {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.plot-card:hover {
+  border-color: #007bff;
+  transform: translateY(-2px);
+}
+
+.plot-card.selected {
+  border-color: #28a745;
+  background-color: #f8fff9;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+}
+
+.plot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plot-number {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.plot-location {
+  font-size: 0.9em;
+  color: #6c757d;
+}
+
+.plot-dimension {
+  font-size: 0.85em;
+  color: #495057;
+  background: #e9ecef;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+.plot-price {
+  font-weight: bold;
+  color: #28a745;
+  font-size: 1.1em;
+}
+
+.plot-status {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.selected-icon {
+  color: #28a745;
+}
+
+.unselected-icon {
+  color: #6c757d;
+}
+
+/* Selected Plots Summary */
+.selected-plots-summary {
+  border-top: 2px solid #dee2e6;
+  padding-top: 1rem;
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.summary-header h4 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.total-price {
+  font-weight: bold;
+  color: #28a745;
+  font-size: 1.1em;
+}
+
+.selected-plots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.selected-plot-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.remove-plot-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.remove-plot-btn:hover {
+  background: #c82333;
+}
+
+/* Financial Display */
+.financial-display {
+  background: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-weight: 600;
+}
+
+.financial-display.total-value {
+  color: #28a745;
+  font-size: 1.1em;
+}
+
+.financial-display.paid-in-full {
+  color: #28a745;
+  background: #f8fff9;
+}
+
+.financial-display.balance-remaining {
+  color: #dc3545;
+  background: #fff5f5;
+}
+
+.full-payment-badge {
+  background: #28a745;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8em;
+  margin-left: 0.5rem;
+}
+
+/* Financial Summary */
+.financial-summary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-weight: 500;
+}
+
+.summary-value {
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.summary-value.paid {
+  color: #90ee90;
+}
+
+.summary-value.pending {
+  color: #ffb6c1;
+}
+
+/* Modal Footer */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.btn-primary:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* No Plots Message */
+.no-plots-message {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.readonly-input {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.price-input {
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+.selected-plots-summary h4 {
+  margin: 0 0 10px 0;
+  font-size: 1em;
+}
+
+.selected-plots-summary ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.readonly-input {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.plot-list-item:hover {
+  background: #f0f8ff;
+}
+
+.plot-list-item.selected {
+  background: #e0f7e9;
+  border-color: #28a745;
+}
+
+.plot-item-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.plot-check-icon {
+  color: green;
+  font-size: 1.2em;
+}
+
+.form-hint {
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 5px;
+  display: block;
+}
+.plot-card:hover {
+  border-color: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.plot-card.selected {
+  border-color: #28a745;
+  background-color: #f8fff9;
+}
+
+.plot-checkbox {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.plot-info {
+  margin-top: 5px;
+}
+
+.plot-number {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+.plot-price {
+  color: #28a745;
+  font-size: 12px;
+  font-weight: bold;
+  margin: 2px 0;
+}
+
+.plot-status {
+  font-size: 11px;
+  color: #6c757d;
+  text-transform: capitalize;
+}
+
+.plot-selection-hint {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .plots-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    max-height: 150px;
+  }
+  
+  .plot-card {
+    padding: 8px;
+  }
+  
+  .plot-number {
+    font-size: 12px;
+  }
+  
+  .plot-price {
+    font-size: 11px;
+  }
+}
+/* Compact Modal Styles */
+.compact-modal {
+  max-width: 750px !important;
+  width: 95vw;
+  margin: 20px auto;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.compact-form {
+  padding: 0;
+}
+
+.compact-section {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.compact-section h4 {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.compact-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.compact-group {
+  margin-bottom: 0;
+}
+
+.compact-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #495057;
+}
+
+.compact-group input,
+.compact-group select {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 100%;
+}
+
+/* Compact Plots Selection */
+.compact-plots-container {
+  margin-bottom: 1rem;
+}
+
+.plots-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.plot-mini-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.plot-mini-card:hover {
+  border-color: #007bff;
+  transform: translateY(-1px);
+}
+
+.plot-mini-card.selected {
+  border-color: #28a745;
+  background: #f8fff9;
+}
+
+.plot-mini-number {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #2c3e50;
+}
+
+.plot-mini-price {
+  font-size: 0.75rem;
+  color: #28a745;
+  margin: 0.25rem 0;
+}
+
+.plot-more-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+/* Selected Plots Tags */
+.selected-plots-compact {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.selected-plots-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.plot-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: #007bff;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.plots-total {
+  text-align: right;
+  font-weight: 600;
+  color: #28a745;
+  font-size: 0.9rem;
+}
+
+/* Financial Grid */
+.financial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.financial-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.financial-item label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #495057;
+}
+
+.price-display {
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #495057;
+}
+
+.amount-display {
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.amount-display.total {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.amount-display.balance.paid {
+  background: #d4edda;
+  color: #155724;
+}
+
+.amount-display.balance.pending {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.paid-badge {
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  background: #28a745;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.7rem;
+}
+
+.deposit-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.schedule-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+/* Compact Footer */
+.compact-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  margin-top: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .compact-modal {
+    margin: 10px;
+    width: calc(100vw - 20px);
+  }
+  
+  .compact-row,
+  .financial-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .plots-mini-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .compact-footer {
+    flex-direction: column;
+  }
 }

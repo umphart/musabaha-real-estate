@@ -108,7 +108,8 @@ const AuthForm = ({ onLogin }) => {
         maxWidth: '400px',
         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)'
       }}>
-        <h2 style={{ textAlign: 'center' }}>MUSABAHA HOMES LTD.</h2>
+        <h2 style={{ textAlign: 'center' }}>MUSABAHA HOMES LTD.    </h2>
+       
 
         <div className="tabs" style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
           <button 

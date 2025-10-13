@@ -7,7 +7,7 @@ import {
   FiSearch, FiPlus, FiFileText, FiDownload, FiX, FiEye, 
   FiEdit, FiTrash2, FiDollarSign, FiCalendar, FiUser, 
   FiHome, FiCreditCard, FiPieChart, FiCheckCircle, FiClock,
-  FiCheck, FiAlertCircle
+  FiPhone, FiMapPin, FiList, FiCircle,FiInfo, FiUserPlus, FiTag, FiTrendingDown
 } from 'react-icons/fi';
 import './AdminUsers.css';
 
@@ -21,16 +21,18 @@ const AdminUsers = () => {
    const [confirmDelete, setConfirmDelete] = useState({ visible: false, userId: null });
   
   
-  const [newUser, setNewUser] = useState({
-    name: '',
-    contact: '',
-    plot_taken: '',
-    date_taken: '',
-    initial_deposit: '',
-    price_per_plot: '',
-    payment_schedule: 'Monthly',
-    total_balance: ''
-  });
+ const [newUser, setNewUser] = useState({
+  name: '',
+  contact: '',
+  plot_taken: '', // This will now store comma-separated plot numbers
+  date_taken: '',
+  initial_deposit: '',
+  price_per_plot: '', // This will be auto-calculated from selected plots
+  payment_schedule: 'Monthly',
+  total_balance: ''
+});
+const [selectedPlots, setSelectedPlots] = useState([]); // Array of selected plot objects
+const [plots, setPlots] = useState([]); // Available plots from API
   const [selectedUser, setSelectedUser] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [paymentData, setPaymentData] = useState({ 
@@ -117,19 +119,106 @@ const AdminUsers = () => {
       setLoading(false);
     }
   };
+useEffect(() => {
+  const fetchPlots = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/plots");
+      const data = await res.json();
+      console.log("Fetched plots:", data);
+      
+      if (data.success) {
+        // Only keep Available plots
+        setPlots(data.data.filter(plot => plot.status === "Available"));
+      }
+    } catch (err) {
+      console.error("Error fetching plots:", err);
+    }
+  };
 
+  fetchPlots();
+}, []);
+const handlePlotSelection = (plot) => {
+  setSelectedPlots(prevSelected => {
+    const isAlreadySelected = prevSelected.some(p => p.id === plot.id);
+    
+    if (isAlreadySelected) {
+      // Remove plot if already selected
+      return prevSelected.filter(p => p.id !== plot.id);
+    } else {
+      // Add plot if not selected
+      return [...prevSelected, plot];
+    }
+  });
+};
+
+// Update newUser when selectedPlots changes
+useEffect(() => {
+  if (selectedPlots.length > 0) {
+    const plotNumbers = selectedPlots.map(plot => plot.number).join(', ');
+    const plotPrices = selectedPlots.map(plot => plot.price).join(', ');
+    const totalPrice = selectedPlots.reduce((sum, plot) => sum + parseFloat(plot.price || 0), 0);
+    
+    setNewUser(prev => ({
+      ...prev,
+      plot_taken: plotNumbers,
+      price_per_plot: plotPrices, // This stores individual prices like "3000000,4000000"
+      total_balance: (totalPrice - parseFloat(prev.initial_deposit || 0)).toString()
+    }));
+  } else {
+    setNewUser(prev => ({
+      ...prev,
+      plot_taken: '',
+      price_per_plot: '',
+      total_balance: ''
+    }));
+  }
+}, [selectedPlots]);
+
+// Update newUser when selectedPlots changes
+useEffect(() => {
+  if (selectedPlots.length > 0) {
+    const plotNumbers = selectedPlots.map(plot => plot.number).join(', ');
+    const totalPrice = selectedPlots.reduce((sum, plot) => sum + parseFloat(plot.price || 0), 0);
+    
+    setNewUser(prev => ({
+      ...prev,
+      plot_taken: plotNumbers,
+      price_per_plot: totalPrice.toString()
+    }));
+  } else {
+    setNewUser(prev => ({
+      ...prev,
+      plot_taken: '',
+      price_per_plot: ''
+    }));
+  }
+
+}, [selectedPlots]);
   useEffect(() => {
     fetchUsers();
   }, []);
+  // Add this function to your component
+const fetchPlots = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/api/plots");
+    const data = await res.json();
+    console.log("Fetched plots:", data);
+    
+    if (data.success) {
+      setPlots(data.data.filter(plot => plot.status === "Available"));
+    }
+  } catch (err) {
+    console.error("Error fetching plots:", err);
+  }
+};
 
-  const calculateTotalPrice = (pricePerPlotStr) => {
-    if (!pricePerPlotStr) return 0;
-    return pricePerPlotStr
-      .split(",")
-      .map(p => parseFloat(p.trim()) || 0)
-      .reduce((a, b) => a + b, 0);
-  };
-
+const calculateTotalPrice = (pricePerPlotStr) => {
+  if (!pricePerPlotStr) return 0;
+  return pricePerPlotStr
+    .split(",")
+    .map(p => parseFloat(p.trim()) || 0)
+    .reduce((a, b) => a + b, 0);
+};
   // Calculate totals
   const totalBalance = users.reduce((total, user) => {
     return total + parseFloat(user.total_balance || 0);
@@ -157,57 +246,59 @@ const AdminUsers = () => {
     }));
   };
   
-  // Create user via API
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
+const handleCreateUser = async (e) => {
+  e.preventDefault();
 
-    try {
-      const token = getAuthToken();
-      const totalPlotPrice = calculateTotalPrice(newUser.price_per_plot);
-      const totalBalance = totalPlotPrice - parseFloat(newUser.initial_deposit || 0);
+  try {
+    const token = getAuthToken();
+    const totalPlotPrice = calculateTotalPrice(newUser.price_per_plot);
+    const totalBalance = totalPlotPrice - parseFloat(newUser.initial_deposit || 0);
 
-      if (!newUser.name || !newUser.contact || !newUser.plot_taken) {
-        showAlert('error', 'Please fill in all required fields.');
-        return;
-      }
+    if (!newUser.name || !newUser.contact || selectedPlots.length === 0) {
+      showAlert('error', 'Please fill in all required fields and select at least one plot.');
+      return;
+    } 
+    const priceList = selectedPlots.map(plot => plot.price).join(', ');
+  
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...newUser,
+        price_per_plot: priceList, // Send comma-separated prices to API
+        total_balance: totalBalance.toString()
+      })
+    });
 
-      const response = await fetch(`${API_BASE_URL}/admin/users`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...newUser,
-          total_balance: totalBalance.toString()
-        })
+    const data = await response.json();
+
+    if (data.success) {
+      setShowCreateModal(false);
+      setSelectedPlots([]);
+      setNewUser({
+        name: '',
+        contact: '',
+        plot_taken: '',
+        date_taken: '',
+        initial_deposit: '',
+        price_per_plot: '',
+        payment_schedule: 'Monthly',
+        total_balance: ''
       });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setShowCreateModal(false);
-        setNewUser({
-          name: '',
-          contact: '',
-          plot_taken: '',
-          date_taken: '',
-          initial_deposit: '',
-          price_per_plot: '',
-          payment_schedule: 'Monthly',
-          total_balance: ''
-        });
-        showAlert('success', 'User created successfully.');
-        fetchUsers(); // Refresh the user list
-      } else {
-        showAlert('error', data.message || 'Failed to create user.');
-      }
-    } catch (error) {
-      console.error('Error creating user:', error);
-      showAlert('error', 'Failed to create user. Please try again.');
+      showAlert('success', 'User created successfully and plots updated to Sold status.');
+      fetchUsers(); // Refresh the user list
+      fetchPlots(); // Refresh available plots
+    } else {
+      showAlert('error', data.message || 'Failed to create user.');
     }
-  };
-
+  } catch (error) {
+    console.error('Error creating user:', error);
+    showAlert('error', 'Failed to create user. Please try again.');
+  }
+};
   // Add payment via API
   const handleAddPayment = async (userId) => {
     if (!paymentData.amount) {
@@ -720,7 +811,7 @@ const createSimpleTable = (doc, tableData, startY = 50) => {
     <div className="admin-content">
      
       <div className="content-header"> 
-        <h2><FiUser className="icon" /> User Management</h2>
+        <h2><FiUser className="icon" /> Client Management</h2>
         
         <div className="header-actions">
           {/* Search box */}
@@ -744,7 +835,7 @@ const createSimpleTable = (doc, tableData, startY = 50) => {
               <FiFileText className="icon" /> PDF
             </div>
             <div className="action-item add-user" onClick={() => setShowCreateModal(true)}>
-              <FiPlus className="icon" /> Add User
+              <FiPlus className="icon" /> Add Client
             </div>
           </div>
         </div>
@@ -816,14 +907,13 @@ const createSimpleTable = (doc, tableData, startY = 50) => {
         <tr key={user.id}>
           <td>
             <div className="user-qinfo">
-              <FiUser className="user-icon" />
               <span>{user.name}</span>
             </div>
           </td>
           <td>{user.contact}</td>
           <td>
             <div className="plot-info">
-              <FiHome className="icon" />
+    
               <span>{user.plot_taken}</span>
             </div>
           </td>
@@ -889,121 +979,205 @@ const createSimpleTable = (doc, tableData, startY = 50) => {
       </div>
 
       {/* Create User Modal */}
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3><FiUser className="icon" /> Add New User</h3>
-              <button className="modal-close" onClick={() => setShowCreateModal(false)}>
-                <FiX />
-              </button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleCreateUser}>
-                <div className="form-group">
-                  <label><FiUser className="icon" /> Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={newUser.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label><FiCalendar className="icon" /> Contact *</label>
-                  <input
-                    type="text"
-                    name="contact"
-                    value={newUser.contact}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label><FiHome className="icon" /> Plot Taken *</label>
-                  <input
-                    type="text"
-                    name="plot_taken"
-                    value={newUser.plot_taken}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label><FiCalendar className="icon" /> Date Taken *</label>
-                  <input
-                    type="date"
-                    name="date_taken"
-                    value={newUser.date_taken}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label><FiDollarSign className="icon" /> Price per Plot (₦) *</label>
-                  <input
-                    type="text"
-                    name="price_per_plot"
-                    value={newUser.price_per_plot}
-                    onChange={handleInputChange}
-                    placeholder="e.g. 2000000,400000"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label><FiDollarSign className="icon" /> Total Price Plots (₦) *</label>
-                  <input
-                    type="text"
-                    value={formatCurrency(calculateTotalPrice(newUser.price_per_plot))}
-                    disabled
-                  />
-                </div>
-                <div className="form-group">
-                  <label><FiDollarSign className="icon" /> Initial Deposit (₦) *</label>
-                  <input
-                    type="number"
-                    name="initial_deposit"
-                    value={newUser.initial_deposit}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label><FiPieChart className="icon" /> Payment Schedule *</label>
-                  <select
-                    name="payment_schedule"
-                    value={newUser.payment_schedule}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="Monthly">Monthly</option>
-                    <option value="Quarterly">Quarterly</option>
-                    <option value="Bi-Annual">Bi-Annual</option>
-                    <option value="Annual">Annual</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label><FiDollarSign className="icon" /> Remaining Balance (₦)</label>
-                  <input
-                    type="text"
-                    value={formatCurrency(calculateTotalPrice(newUser.price_per_plot) - parseFloat(newUser.initial_deposit || 0))}
-                    disabled
-                  />
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn btn-primary">
-                    Create User
-                  </button>
-                </div>
-              </form>
+{showCreateModal && (
+  <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+    <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '750px', width: '95vw' }}>
+      <div className="modal-header">
+        <h3><FiUserPlus className="icon" /> Register New Customer</h3>
+        <button className="modal-close" onClick={() => setShowCreateModal(false)}>
+          <FiX />
+        </button>
+      </div>
+      
+      <div className="modal-body">
+        <form onSubmit={handleCreateUser} className="user-creation-form compact-form">
+          {/* Customer Information Section */}
+          <div className="form-section compact-section">
+            <h4><FiUser className="icon" /> Customer Information</h4>
+            <div className="form-row compact-row">
+              <div className="form-group compact-group">
+                <label><FiUser className="icon" /> Full Name *</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={newUser.name}
+                  onChange={handleInputChange}
+                  placeholder="Enter full name"
+                  required
+                />
+              </div>
+              <div className="form-group compact-group">
+                <label><FiPhone className="icon" /> Contact Number *</label>
+                <input
+                  type="text"
+                  name="contact"
+                  value={newUser.contact}
+                  onChange={handleInputChange}
+                  placeholder="Phone number"
+                  required
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+
+          {/* Plot Selection Section */}
+          <div className="form-section compact-section">
+            <h4><FiMapPin className="icon" /> Plot Selection ({selectedPlots.length} selected)</h4>
+            
+            <div className="compact-plots-container">
+              <div className="plots-mini-grid">
+                {plots.slice(0, 6).map(plot => (
+                  <div 
+                    key={plot.id}
+                    className={`plot-mini-card ${selectedPlots.some(p => p.id === plot.id) ? 'selected' : ''}`}
+                    onClick={() => handlePlotSelection(plot)}
+                    title={`Plot ${plot.number} - ${plot.location} - ${formatCurrency(plot.price)}`}
+                  >
+                    <span className="plot-mini-number">#{plot.number}</span>
+                    <span className="plot-mini-price">{formatCurrency(plot.price)}</span>
+                    {selectedPlots.some(p => p.id === plot.id) ? (
+                      <FiCheckCircle className="selected-icon" />
+                    ) : (
+                      <FiCircle className="unselected-icon" />
+                    )}
+                  </div>
+                ))}
+                {plots.length > 6 && (
+                  <div className="plot-more-indicator">
+                    +{plots.length - 6} more
+                  </div>
+                )}
+              </div>
+              
+              {selectedPlots.length > 0 && (
+                <div className="selected-plots-compact">
+                  <div className="selected-plots-tags">
+                    {selectedPlots.map(plot => (
+                      <span key={plot.id} className="plot-tag">
+                        Plot {plot.number}
+                        <button 
+                          type="button"
+                          className="tag-remove"
+                          onClick={() => handlePlotSelection(plot)}
+                        >
+                          <FiX size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="plots-total">
+                    <span>Total: {formatCurrency(selectedPlots.reduce((sum, plot) => sum + parseFloat(plot.price || 0), 0))}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="form-row compact-row">
+              <div className="form-group compact-group">
+                <label><FiCalendar className="icon" /> Acquisition Date *</label>
+                <input
+                  type="date"
+                  name="date_taken"
+                  value={newUser.date_taken}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Financial Information Section */}
+          <div className="form-section compact-section">
+            <h4><FiDollarSign className="icon" /> Financial Details</h4>
+            
+            <div className="financial-grid">
+              <div className="financial-item">
+                <label>Plot Prices</label>
+                <div className="price-display">
+                  {selectedPlots.map(plot => formatCurrency(plot.price)).join(', ')}
+                </div>
+              </div>
+              
+              <div className="financial-item">
+                <label>Total Price</label>
+                <div className="amount-display total">
+                  {formatCurrency(calculateTotalPrice(newUser.price_per_plot))}
+                </div>
+              </div>
+              
+              <div className="financial-item">
+                <label>Initial Deposit *</label>
+                <input
+                  type="number"
+                  name="initial_deposit"
+                  value={newUser.initial_deposit}
+                  onChange={handleInputChange}
+                  placeholder="0"
+                  min="0"
+                  required
+                  className="deposit-input"
+                />
+              </div>
+              
+              <div className="financial-item">
+                <label>Balance</label>
+                <div className={`amount-display balance ${
+                  (calculateTotalPrice(newUser.price_per_plot) - parseFloat(newUser.initial_deposit || 0)) <= 0 
+                    ? 'paid' 
+                    : 'pending'
+                }`}>
+                  {formatCurrency(calculateTotalPrice(newUser.price_per_plot) - parseFloat(newUser.initial_deposit || 0))}
+                  {(calculateTotalPrice(newUser.price_per_plot) - parseFloat(newUser.initial_deposit || 0)) <= 0 && (
+                    <span className="paid-badge">Paid</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="form-group compact-group">
+              <label><FiPieChart className="icon" /> Payment Schedule *</label>
+              <select
+                name="payment_schedule"
+                value={newUser.payment_schedule}
+                onChange={handleInputChange}
+                required
+                className="schedule-select"
+              >
+    <option value="">Select Payment Terms</option>
+    <option value="3 Months">3 Months</option>
+    <option value="12 Months">12 Months</option>
+    <option value="18 Months">18 Months</option>
+    <option value="24 Months">24 Months</option>
+    <option value="30 Months">30 Months</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="modal-footer compact-footer">
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={() => {
+                setShowCreateModal(false);
+                setSelectedPlots([]);
+              }}
+            >
+              <FiX className="icon" /> Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              disabled={selectedPlots.length === 0}
+            >
+              <FiUserPlus className="icon" /> Register Customer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+)}
       {/* Edit User Modal */}
 {showEditModal && editUser && (
   <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
@@ -1103,8 +1277,7 @@ const createSimpleTable = (doc, tableData, startY = 50) => {
     </div>
   </div>
 )}
-  
-     
+ 
       {/* View User Modal with Payment History */}
       {showViewModal && selectedUser && (
         <div className="modal-overlay" onClick={() => setShowViewModal(false)}>

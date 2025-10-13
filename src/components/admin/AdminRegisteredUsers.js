@@ -1,6 +1,6 @@
 // src/components/admin/AdminRegisteredUsers.js
 import React, { useState, useEffect } from "react";
-
+import Swal from "sweetalert2";
 const AdminRegisteredUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +28,7 @@ const AdminRegisteredUsers = () => {
       if (!response.ok) throw new Error("Failed to fetch users");
 
       const data = await response.json();
+      console.log(data)
       if (data.success) {
         setUsers(data.data);
       } else {
@@ -42,33 +43,68 @@ const AdminRegisteredUsers = () => {
   };
 
   // Approve user
-  const approveUser = async (id) => {
-    try {
-      const token = getAuthToken();
-      const response = await fetch(
-        `${API_BASE_URL}/subscriptions/${id}/approve`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+const approveUser = async (id) => {
+  try {
+    const token = getAuthToken();
+    
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You are about to approve this user's subscription!",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, approve it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
 
-      if (!response.ok) throw new Error("Failed to approve user");
-
-      const data = await response.json();
-      if (data.success) {
-        setUsers((prev) =>
-          prev.map((u) => (u.id === id ? { ...u, status: "approved" } : u))
-        );
-      }
-    } catch (err) {
-      console.error("Error approving user:", err);
-      alert("Could not approve user. Please try again.");
+    if (!result.isConfirmed) {
+      return; // User cancelled the action
     }
-  };
+
+    const response = await fetch(
+      `${API_BASE_URL}/subscriptions/${id}/approve`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) throw new Error("Failed to approve user");
+
+    const data = await response.json();
+    if (data.success) {
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, status: "approved" } : u))
+      );
+      
+      // Show success message with plot count
+      await Swal.fire({
+        title: 'Approved!',
+        html: `User approved successfully for <strong>${data.data.plotIds.length} plot(s)</strong>!`,
+        icon: 'success',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK'
+      });
+    }
+  } catch (err) {
+    console.error("Error approving user:", err);
+    
+    // Show error message
+    await Swal.fire({
+      title: 'Error!',
+      text: 'Could not approve user. Please try again.',
+      icon: 'error',
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'OK'
+    });
+  }
+};
 
   // Reject user
   const rejectUser = async (id) => {
@@ -113,14 +149,14 @@ const AdminRegisteredUsers = () => {
     return (
       <div className="loading">
         <div className="spinner"></div>
-        <p>Loading registered users...</p>
+        <p>Loading registered Client...</p>
       </div>
     );
   }
 
   return (
     <div className="admin-users">
-      <h2>Registered Users</h2>
+      <h2>Registered Client</h2>
 
       {error && (
         <div className="alert alert-error">
@@ -134,9 +170,9 @@ const AdminRegisteredUsers = () => {
             <th>#</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Telephone</th>
-            <th>Occupation</th>
-            <th>Estate</th>
+            <th>Phone Number</th>
+            <th>Layout</th>
+            <th>Total Price</th>
             <th>Plots</th>
             <th>Status</th>
             <th style={{ textAlign: "center" }}>Actions</th>
@@ -155,9 +191,9 @@ const AdminRegisteredUsers = () => {
                 <td>{index + 1}</td>
                 <td>{user.name || "-"}</td>
                 <td>{user.email || "-"}</td>
-                <td>{user.telephone || "-"}</td>
-                <td>{user.occupation || "-"}</td>
-                <td>{user.estate_name || "-"}</td>
+                <td>{user.phone_number || "-"}</td>
+                <td>{user.layout_name || "-"}</td>
+                <td>{user.price || "-"}</td>
                 <td>{user.number_of_plots || 0}</td>
                 <td>
                   <span
@@ -226,79 +262,71 @@ const AdminRegisteredUsers = () => {
               ×
             </button>
 
-            {modalType === "docs" && (
-              <div className="docs-modal">
-                <h3>
-                  <i className="fas fa-file-alt"></i> Uploaded Documents
-                </h3>
-                <ul className="doc-list">
-                  {selectedUser.passport_photo && (
-                    <li>
-                      <span>📸 Passport Photo</span>
-                      <a
-                        href={`${API_BASE_URL.replace(
-                          "/api",
-                          ""
-                        )}/${selectedUser.passport_photo}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="doc-link"
-                      >
-                        <i className="fas fa-eye"></i>
-                      </a>
-                    </li>
-                  )}
-                  {selectedUser.identification_file && (
-                    <li>
-                      <span>🪪 Identification</span>
-                      <a
-                        href={`${API_BASE_URL.replace(
-                          "/api",
-                          ""
-                        )}/${selectedUser.identification_file}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="doc-link"
-                      >
-                        <i className="fas fa-eye"></i>
-                      </a>
-                    </li>
-                  )}
-                  {selectedUser.utility_bill_file && (
-                    <li>
-                      <span>💡 Utility Bill</span>
-                      <a
-                        href={`${API_BASE_URL.replace(
-                          "/api",
-                          ""
-                        )}/${selectedUser.utility_bill_file}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="doc-link"
-                      >
-                        <i className="fas fa-eye"></i>
-                      </a>
-                    </li>
-                  )}
-                  {selectedUser.signature_file && (
-                    <li>
-                      <span>✍️ Signature</span>
-                      <a
-                        href={`${API_BASE_URL.replace(
-                          "/api",
-                          ""
-                        )}/${selectedUser.signature_file}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="doc-link"
-                      >
-                        <i className="fas fa-eye"></i>
-                      </a>
-                    </li>
-                  )}
-                </ul>
-              </div>
-            )}
+{modalType === "docs" && (
+  <div className="docs-modal">
+    <h3>
+      <i className="fas fa-file-alt"></i> Uploaded Documents
+    </h3>
+    <ul className="doc-list">
+      {selectedUser.passport_photo && (
+        <li>
+          <span>📸 Passport Photo</span>
+          <a
+            href={`http://localhost:5000/uploads/${selectedUser.passport_photo}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="doc-link"
+          >
+            <i className="fas fa-eye"></i>
+          </a>
+        </li>
+      )}
+
+      {selectedUser.identification_file && (
+        <li>
+          <span>🪪 Identification</span>
+          <a
+            href={`http://localhost:5000/uploads/${selectedUser.identification_file}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="doc-link"
+          >
+            <i className="fas fa-eye"></i>
+          </a>
+        </li>
+      )}
+
+      {selectedUser.utility_bill_file && (
+        <li>
+          <span>💡 Utility Bill</span>
+          <a
+            href={`http://localhost:5000/uploads/${selectedUser.utility_bill_file}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="doc-link"
+          >
+            <i className="fas fa-eye"></i>
+          </a>
+        </li>
+      )}
+
+      {selectedUser.signature_file && (
+        <li>
+          <span>✍️ Signature</span>
+          <a
+            href={`http://localhost:5000/uploads/${selectedUser.signature_file}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="doc-link"
+          >
+            <i className="fas fa-eye"></i>
+          </a>
+        </li>
+      )}
+    </ul>
+  </div>
+)}
+
 
             {modalType === "details" && (
               <>
