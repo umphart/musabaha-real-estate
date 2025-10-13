@@ -7,7 +7,7 @@ import {
   FiSearch, FiPlus, FiFileText, FiDownload, FiX, FiEye, 
   FiEdit, FiTrash2, FiDollarSign, FiCalendar, FiUser, 
   FiHome, FiCreditCard, FiPieChart, FiCheckCircle, FiClock,
-  FiPhone, FiMapPin, FiList, FiCircle,FiInfo, FiUserPlus, FiTag, FiTrendingDown
+  FiPhone, FiMapPin, FiList, FiCircle,FiInfo, FiUserPlus, FiTag, FiTrendingDown, FiNaira
 } from 'react-icons/fi';
 import './AdminUsers.css';
 
@@ -843,15 +843,15 @@ const createSimpleTable = (doc, tableData, startY = 50) => {
 
   {/* Summary Cards */}
       <div className="summary-cards">
-        <div className="summary-card">
-          <div className="summary-icon total-balance">
-            <FiDollarSign />
-          </div>
-          <div className="summary-content">
-            <h3>{formatCurrency(totalBalance)}</h3>
-            <p>Total Outstanding Balance</p>
-          </div>
-        </div>
+     <div className="summary-card">
+  <div className="summary-icon total-balance">
+    <FiNaira />
+  </div>
+  <div className="summary-content">
+    <h3>{formatCurrency(totalBalance)}</h3>
+    <p>Total Outstanding Balance</p>
+  </div>
+</div>
         
         <div className="summary-card">
           <div className="summary-icon total-value">
