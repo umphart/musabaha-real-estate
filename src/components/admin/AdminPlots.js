@@ -36,7 +36,7 @@ const AdminPlots = () => {
   }, []);
 
   const fetchPlots = () => {
-    fetch("http://https://musabaha-homes.onrender.com/api/plots")
+    fetch("https://musabaha-homes.onrender.com/api/plots")
       .then(res => res.json())
       .then(data => {
         console.log("Fetched plots:", data);
