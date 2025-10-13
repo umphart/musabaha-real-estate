@@ -33,14 +33,14 @@ const UserPlots = ({ user }) => {
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/subscriptions?email=${user.email}`);
+        const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
         const result = await response.json();
         console.log('Subscriptions fetch result:', result);
         if (result.success) {
           setSubscriptions(result.data);
           
           const paymentsResponse = await fetch(
-            `http://localhost:5000/api/user-payments/user/${user.id}`
+            `https://musabaha-homes.onrender.com/api/user-payments/user/${user.id}`
           );
           const paymentsData = await paymentsResponse.json();
           
@@ -246,7 +246,7 @@ const UserPlots = ({ user }) => {
         formData.append('receipt', paymentData.receiptFile);
       }
 
-      const response = await fetch('http://localhost:5000/api/user-payments', {
+      const response = await fetch('https://musabaha-homes.onrender.com/api/user-payments', {
         method: 'POST',
         body: formData
       });
@@ -279,7 +279,7 @@ const UserPlots = ({ user }) => {
           receiptFile: null
         });
         
-        const subscriptionsResponse = await fetch(`http://localhost:5000/api/subscriptions?email=${user.email}`);
+        const subscriptionsResponse = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
         const subscriptionsResult = await subscriptionsResponse.json();
         if (subscriptionsResult.success) {
           setSubscriptions(subscriptionsResult.data);

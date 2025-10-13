@@ -11,7 +11,8 @@ const AuthForm = ({ onLogin }) => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  const API_BASE_URL = 'http://localhost:5000/api';
+// In your AdminDashboard component or config file
+const API_BASE_URL = 'https://musabaha-homes.onrender.com';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

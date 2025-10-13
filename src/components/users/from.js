@@ -233,7 +233,7 @@ const SubscriptionForm = () => {
         }
       }
 
-  const response = await fetch("http://localhost:5000/api/subscriptions", {
+  const response = await fetch("http://t:5000/api/subscriptions", {
         method: "POST",
         body: data,
       });
@@ -1030,7 +1030,7 @@ const UserPayments = ({ user }) => {
     const fetchPayments = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/user-payments/user/${user.id}`
+          `https://musabaha-homes.onrender.com/api/user-payments/user/${user.id}`
         );
         const data = await res.json();
 

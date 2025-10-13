@@ -8,7 +8,7 @@ const AdminRegisteredUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalType, setModalType] = useState(null); // "docs" | "details"
 
-  const API_BASE_URL = "http://localhost:5000/api";
+  const API_BASE_URL = "https://musabaha-homes.onrender.com/api";
 
   const getAuthToken = () => localStorage.getItem("adminToken");
 
@@ -272,7 +272,7 @@ const approveUser = async (id) => {
         <li>
           <span>📸 Passport Photo</span>
           <a
-            href={`http://localhost:5000/uploads/${selectedUser.passport_photo}`}
+            href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.passport_photo}`}
             target="_blank"
             rel="noopener noreferrer"
             className="doc-link"
@@ -286,7 +286,7 @@ const approveUser = async (id) => {
         <li>
           <span>🪪 Identification</span>
           <a
-            href={`http://localhost:5000/uploads/${selectedUser.identification_file}`}
+            href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.identification_file}`}
             target="_blank"
             rel="noopener noreferrer"
             className="doc-link"
@@ -300,7 +300,7 @@ const approveUser = async (id) => {
         <li>
           <span>💡 Utility Bill</span>
           <a
-            href={`http://localhost:5000/uploads/${selectedUser.utility_bill_file}`}
+            href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.utility_bill_file}`}
             target="_blank"
             rel="noopener noreferrer"
             className="doc-link"
@@ -314,7 +314,7 @@ const approveUser = async (id) => {
         <li>
           <span>✍️ Signature</span>
           <a
-            href={`http://localhost:5000/uploads/${selectedUser.signature_file}`}
+            href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.signature_file}`}
             target="_blank"
             rel="noopener noreferrer"
             className="doc-link"
