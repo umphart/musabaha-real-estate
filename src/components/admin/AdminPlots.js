@@ -215,7 +215,7 @@ const AdminPlots = () => {
 
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`http://t:5000/api/layout-plan/${layoutId}`, {
+        const res = await fetch(`https://musabaha-homes.onrender.com/api/layout-plan/${layoutId}`, {
           method: 'DELETE'
         });
         const data = await res.json();
