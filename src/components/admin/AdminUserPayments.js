@@ -23,7 +23,7 @@ const AdminUserPayments = () => {
 
   const fetchPayments = async () => {
     try {
-      const response = await fetch("https://musabaha-homes.onrender.com/api/user-payments");
+      const response = await fetch("https://https://musabaha-homes.onrender.com/api/user-payments");
       const result = await response.json();
 
       if (result.success && Array.isArray(result.payments)) {
@@ -112,7 +112,7 @@ const AdminUserPayments = () => {
       const backendStatus = statusMap[action] || action;
 
       const response = await fetch(
-        `https://musabaha-homes.onrender.com/api/user-payments/${paymentId}/status`,
+        `https://https://musabaha-homes.onrender.com/api/user-payments/${paymentId}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -226,7 +226,7 @@ const AdminUserPayments = () => {
                   <td>
                     {p.receipt_file ? (
                       <a
-                        href={`https://musabaha-homes.onrender.com/uploads/receipts/${p.receipt_file}`}
+                        href={`https://https://musabaha-homes.onrender.com/uploads/receipts/${p.receipt_file}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="View Receipt"

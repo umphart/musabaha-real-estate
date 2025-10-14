@@ -36,7 +36,7 @@ const AdminPlots = () => {
   }, []);
 
   const fetchPlots = () => {
-    fetch("https://musabaha-homes.onrender.com/api/plots")
+    fetch("https://https://musabaha-homes.onrender.com/api/plots")
       .then(res => res.json())
       .then(data => {
         console.log("Fetched plots:", data);
@@ -51,7 +51,7 @@ const AdminPlots = () => {
 
   const fetchLayoutPlan = async () => {
     try {
-      const res = await fetch("https://musabaha-homes.onrender.com/api/layout-plan");
+      const res = await fetch("https://https://musabaha-homes.onrender.com/api/layout-plan");
       const data = await res.json();
       if (data.success && data.data) {
         setLayoutPlan(data.data);
@@ -63,7 +63,7 @@ const AdminPlots = () => {
 
   const fetchAllLayoutPlans = async () => {
     try {
-      const res = await fetch("https://musabaha-homes.onrender.com/api/layout-plan/all");
+      const res = await fetch("https://https://musabaha-homes.onrender.com/api/layout-plan/all");
       const data = await res.json();
       if (data.success) {
         setAllLayoutPlans(data.data);
@@ -96,7 +96,7 @@ const AdminPlots = () => {
   const handleCreatePlot = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("https://musabaha-homes.onrender.com/api/plots", {
+      const res = await fetch("https://https://musabaha-homes.onrender.com/api/plots", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newPlot),
@@ -144,7 +144,7 @@ const AdminPlots = () => {
       formData.append('layoutPlan', newLayout.layoutPlan);
       formData.append('layoutName', newLayout.layoutName);
 
-      const res = await fetch("https://musabaha-homes.onrender.com/api/layout-plan", {
+      const res = await fetch("https://https://musabaha-homes.onrender.com/api/layout-plan", {
         method: "POST",
         body: formData,
       });
@@ -183,7 +183,7 @@ const AdminPlots = () => {
     }
 
     try {
-      const response = await fetch(`https://musabaha-homes.onrender.com/api/layout-plan/download/${layoutToDownload.id}`);
+      const response = await fetch(`https://https://musabaha-homes.onrender.com/api/layout-plan/download/${layoutToDownload.id}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -217,7 +217,7 @@ const AdminPlots = () => {
 
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`https://musabaha-homes.onrender.com/api/layout-plan/${layoutId}`, {
+        const res = await fetch(`https://https://musabaha-homes.onrender.com/api/layout-plan/${layoutId}`, {
           method: 'DELETE'
         });
         const data = await res.json();
@@ -319,7 +319,7 @@ const AdminPlots = () => {
                 <FiDownload />
               </button>
               <a 
-                href={`https://musabaha-homes.onrender.com${layoutPlan.file_url}`} 
+                href={`https://https://musabaha-homes.onrender.com${layoutPlan.file_url}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="icon-btn info"
@@ -494,7 +494,7 @@ const AdminPlots = () => {
                         <FiDownload />
                       </button>
                       <a 
-                        href={`https://musabaha-homes.onrender.com${layout.file_url}`} 
+                        href={`https://https://musabaha-homes.onrender.com${layout.file_url}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="icon-btn info"
@@ -555,7 +555,7 @@ const AdminPlots = () => {
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 try {
-                  const res = await fetch(`https://musabaha-homes.onrender.com/api/plots/${editPlot.id}`, {
+                  const res = await fetch(`https://https://musabaha-homes.onrender.com/api/plots/${editPlot.id}`, {
                     method: 'PUT',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(editPlot),
