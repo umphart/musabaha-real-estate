@@ -19,7 +19,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
-
 const SubscriptionForm = () => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -38,6 +37,11 @@ const SubscriptionForm = () => {
   const [selectedLayout, setSelectedLayout] = useState(null);
   const [pdfError, setPdfError] = useState(null);
   const navigate = useNavigate();
+
+  // Add loading states
+  const [loadingPlots, setLoadingPlots] = useState(true);
+  const [loadingLayouts, setLoadingLayouts] = useState(true);
+  const [apiErrors, setApiErrors] = useState({ plots: null, layouts: null });
 
 const [formData, setFormData] = useState({
   selectedPlots: [],
@@ -76,45 +80,74 @@ const [formData, setFormData] = useState({
   signatureFile: null
   // REMOVED: proposedType
 });
-  // Fetch all layout plans from backend
-  const fetchAllLayoutPlans = async () => {
-    try {
-      const res = await fetch("https://musabaha-homes-ltd.vercel.app/api/layout-plan/all");
-      const data = await res.json();
-      console.log("Layout plans response:", data);
-      
-      if (data.success) {
-        setAllLayoutPlans(data.data);
-        
-        // Set the first layout as current PDF if available
-        if (data.data.length > 0) {
-          setSelectedLayout(data.data[0]);
-          const fullUrl = `https://musabaha-homes-ltd.vercel.app${data.data[0].file_url}`;
-          console.log("Setting current PDF URL:", fullUrl);
-          setCurrentPdf(fullUrl);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching all layout plans:", error);
-    }
-  };
-
-  // Fetch plots from backend
+// Fetch plots from backend with better error handling
 const fetchPlots = async () => {
   try {
+    console.log("🔄 Fetching plots from API...");
     const res = await fetch("https://musabaha-homes-ltd.vercel.app/api/plots");
-    const data = await res.json();
     
-    // Correct way to access plot IDs
-    console.log("Plots response:", data);
-    console.log("First plot ID:", data.data?.[0]?.id);
-    console.log("All plot IDs:", data.data?.map(plot => plot.id));
+    // Check if response is HTML (error page)
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      const text = await res.text();
+      console.error("❌ Server returned HTML instead of JSON:", text.substring(0, 200));
+      throw new Error('Server error: Received HTML instead of JSON response');
+    }
+    
+    const data = await res.json();
+    console.log("✅ Plots response:", data);
     
     if (data.success) {
-      setPlots(data.data.filter(plot => plot.status === "Available"));
+      const availablePlots = data.data?.filter(plot => plot.status === "Available") || [];
+      console.log(`✅ Found ${availablePlots.length} available plots`);
+      setPlots(availablePlots);
+    } else {
+      console.error("❌ API returned error:", data.message);
+      setPlots([]);
     }
   } catch (err) {
-    console.error("Error fetching plots:", err);
+    console.error("❌ Error fetching plots:", err);
+    setPlots([]);
+  }
+};
+
+// Fetch all layout plans from backend with better error handling
+const fetchAllLayoutPlans = async () => {
+  try {
+    console.log("🔄 Fetching layout plans from API...");
+    const res = await fetch("https://musabaha-homes-ltd.vercel.app/api/layout-plan/all");
+    
+    // Check if response is HTML (error page)
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      const text = await res.text();
+      console.error("❌ Server returned HTML instead of JSON:", text.substring(0, 200));
+      throw new Error('Server error: Received HTML instead of JSON response');
+    }
+    
+    const data = await res.json();
+    console.log("✅ Layout plans response:", data);
+    
+    if (data.success) {
+      setAllLayoutPlans(data.data || []);
+      
+      // Set the first layout as current PDF if available
+      if (data.data && data.data.length > 0) {
+        const firstLayout = data.data[0];
+        setSelectedLayout(firstLayout);
+        const fullUrl = `https://musabaha-homes-ltd.vercel.app${firstLayout.file_url}`;
+        console.log("✅ Setting current PDF URL:", fullUrl);
+        setCurrentPdf(fullUrl);
+      } else {
+        console.log("ℹ️ No layout plans available");
+      }
+    } else {
+      console.error("❌ API returned error:", data.message);
+      setAllLayoutPlans([]);
+    }
+  } catch (error) {
+    console.error("❌ Error fetching all layout plans:", error);
+    setAllLayoutPlans([]);
   }
 };
   function onDocumentLoadSuccess({ numPages }) {
@@ -128,10 +161,27 @@ const fetchPlots = async () => {
     setPdfError('Failed to load PDF document. Please try downloading the layout plan instead.');
   }
 
-  useEffect(() => {
-    fetchPlots();
-    fetchAllLayoutPlans();
-  }, []);
+useEffect(() => {
+  const fetchData = async () => {
+    setLoadingPlots(true);
+    setLoadingLayouts(true);
+    setApiErrors({ plots: null, layouts: null });
+
+    try {
+      await Promise.all([
+        fetchPlots(),
+        fetchAllLayoutPlans()
+      ]);
+    } catch (error) {
+      console.error("Error in initial data fetch:", error);
+    } finally {
+      setLoadingPlots(false);
+      setLoadingLayouts(false);
+    }
+  };
+
+  fetchData();
+}, []);
 
   // Handle layout selection
   const handleLayoutSelect = (layout) => {
@@ -880,14 +930,32 @@ const handleSubmit = async (e) => {
       </div>
     </div>
 
-    {/* Plot Selection */}
-    <div className="form-group">
-      <label>Select Plot(s) *</label>
+{/* Plot Selection */}
+<div className="form-group">
+  <label>Select Plot(s) *</label>
 
-      <div className="plots-list-container">
-        {plots.length === 0 ? (
-          <p>Loading available plots...</p>
-        ) : (
+  <div className="plots-list-container">
+    {loadingPlots ? (
+      <div className="loading-state">
+        <p>Loading available plots...</p>
+      </div>
+    ) : apiErrors.plots ? (
+      <div className="error-state">
+        <p>❌ Failed to load plots: {apiErrors.plots}</p>
+        <button 
+          type="button" 
+          className="btn-retry"
+          onClick={fetchPlots}
+        >
+          Retry
+        </button>
+      </div>
+    ) : plots.length === 0 ? (
+      <div className="empty-state">
+        <p>No available plots found.</p>
+        <p className="small-text">Please check back later or contact support.</p>
+      </div>
+    ) : (
           <>
             <ul className="plots-list">
               {plots.slice(0, visiblePlotsCount).map((plot) => {
