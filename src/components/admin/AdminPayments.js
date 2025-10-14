@@ -34,7 +34,7 @@ const AdminPayments = () => {
     try {
       setLoading(true);
       const token = getAuthToken();
-      const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+      const response = await fetch(`${API_BASE_URL}/admin/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

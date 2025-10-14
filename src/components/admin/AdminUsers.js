@@ -7,7 +7,7 @@ import {
   FiSearch, FiPlus, FiFileText, FiDownload, FiX, FiEye, 
   FiEdit, FiTrash2, FiDollarSign, FiCalendar, FiUser, 
   FiHome, FiCreditCard, FiPieChart, FiCheckCircle, FiClock,
-  FiPhone, FiMapPin, FiList, FiCircle,FiInfo, FiUserPlus, FiTag, FiTrendingDown,
+  FiPhone, FiMapPin, FiList, FiCircle,FiInfo, FiUserPlus, FiTag, FiTrendingDown
 } from 'react-icons/fi';
 import './AdminUsers.css';
 
@@ -43,7 +43,7 @@ const [plots, setPlots] = useState([]); // Available plots from API
   });
  
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   // Get auth token from localStorage
   const getAuthToken = () => {
@@ -122,7 +122,7 @@ const [plots, setPlots] = useState([]); // Available plots from API
 useEffect(() => {
   const fetchPlots = async () => {
     try {
-      const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
+      const res = await fetch("http://localhost:5000/api/plots");
       const data = await res.json();
       console.log("Fetched plots:", data);
       
@@ -200,7 +200,7 @@ useEffect(() => {
   // Add this function to your component
 const fetchPlots = async () => {
   try {
-    const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
+    const res = await fetch("http://localhost:5000/api/plots");
     const data = await res.json();
     console.log("Fetched plots:", data);
     
@@ -843,15 +843,15 @@ const createSimpleTable = (doc, tableData, startY = 50) => {
 
   {/* Summary Cards */}
       <div className="summary-cards">
-     <div className="summary-card">
-  <div className="summary-icon total-balance">
-    <FiDollarSign />
-  </div>
-  <div className="summary-content">
-    <h3>{formatCurrency(totalBalance)}</h3>
-    <p>Total Outstanding Balance</p>
-  </div>
-</div>
+        <div className="summary-card">
+          <div className="summary-icon total-balance">
+            <FiDollarSign />
+          </div>
+          <div className="summary-content">
+            <h3>{formatCurrency(totalBalance)}</h3>
+            <p>Total Outstanding Balance</p>
+          </div>
+        </div>
         
         <div className="summary-card">
           <div className="summary-icon total-value">

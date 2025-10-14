@@ -29,7 +29,7 @@ const UserPayments = ({ user }) => {
     const fetchPayments = async () => {
       try {
         const res = await fetch(
-          `https://musabaha-homes.onrender.com/api/user-payments/user/${user.id}`
+          `http://localhost:5000/api/user-payments/user/${user.id}`
         );
         const data = await res.json();
         console.log(data)
@@ -58,7 +58,7 @@ const UserPayments = ({ user }) => {
     const fetchSubsequentPayments = async () => {
       try {
         const res = await fetch(
-          `https://musabaha-homes.onrender.com/api/user-subsequent-payments/user/${user.id}`
+          `http://localhost:5000/api/user-subsequent-payments/user/${user.id}`
         );
         const data = await res.json();
         if (data.success) {
@@ -202,7 +202,7 @@ const UserPayments = ({ user }) => {
         submitFormData.append("receipt", formData.receipt);
       }
 
-      const res = await fetch("https://musabaha-homes.onrender.com/api/user-subsequent-payments", {
+      const res = await fetch("http://localhost:5000/api/user-subsequent-payments", {
         method: "POST",
         body: submitFormData,
       });
