@@ -736,6 +736,33 @@ const fetchDashboardData = async () => {
     opacity: 0.5;
   }
 
+  @media (max-width: 600px) {
+  .payment-option {
+    padding: 15px;
+  }
+
+  .payment-option h4 {
+    font-size: 16px;
+  }
+
+  .account-detail strong,
+  .account-detail span {
+    font-size: 14px;
+    word-break: break-word;
+  }
+
+  .account-copy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .copy-btn {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+}
+
   /* Dashboard Header */
   .dashboard-header {
     margin-bottom: 32px;
