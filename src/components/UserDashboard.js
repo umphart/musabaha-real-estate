@@ -736,33 +736,6 @@ const fetchDashboardData = async () => {
     opacity: 0.5;
   }
 
-  @media (max-width: 600px) {
-  .payment-option {
-    padding: 15px;
-  }
-
-  .payment-option h4 {
-    font-size: 16px;
-  }
-
-  .account-detail strong,
-  .account-detail span {
-    font-size: 14px;
-    word-break: break-word;
-  }
-
-  .account-copy {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-
-  .copy-btn {
-    font-size: 12px;
-    padding: 5px 8px;
-  }
-}
-
   /* Dashboard Header */
   .dashboard-header {
     margin-bottom: 32px;
@@ -862,7 +835,14 @@ const fetchDashboardData = async () => {
     letter-spacing: 0.5px;
     margin: 0 0 8px 0;
   }
-
+#acct1{
+color:white;
+background-color:blue;
+}
+#acct2{
+color:white;
+background-color:blue;
+}
   .stat-trend {
     display: flex;
     align-items: center;
@@ -1217,7 +1197,14 @@ const fetchDashboardData = async () => {
     .stats-overview {
       grid-template-columns: 1fr;
     }
-
+#acct1{
+color:white;
+background-color:blue;
+}
+#acct2{
+color:white;
+background-color:blue;
+}
     .quick-actions-grid {
       grid-template-columns: 1fr;
     }
@@ -1843,6 +1830,32 @@ const fetchDashboardData = async () => {
           border-left: 4px solid #38a169;
           background: #f0fff4;
         }
+@media (max-width: 600px) {
+  .payment-option {
+    padding: 15px;
+  }
+
+  .payment-option h4 {
+    font-size: 16px;
+  }
+
+  .account-detail strong,
+  .account-detail span {
+    font-size: 14px;
+    word-break: break-word;
+  }
+
+  .account-copy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .copy-btn {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+}
 
         .option-header {
           display: flex;
@@ -1867,6 +1880,7 @@ const fetchDashboardData = async () => {
         }
 
         .account-detail {
+        color: #085ae7ff;
           display: flex;
           align-items: center;
           margin-bottom: 10px;
@@ -1874,6 +1888,7 @@ const fetchDashboardData = async () => {
         }
 
         .account-detail strong {
+        
           min-width: 140px;
           color: #2c3e50;
         }
