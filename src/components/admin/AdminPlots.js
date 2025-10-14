@@ -578,7 +578,7 @@ const AdminPlots = () => {
                   Swal.fire({ icon: 'error', title: 'Network Error', text: 'Try again later.' });
                 }
               }}>
-                {["number", "location", "dimension", "price"].map(field => (
+                {["number", "Layout Name", "dimension", "price"].map(field => (
                   <div className="form-group" key={field}>
                     <label>{field.charAt(0).toUpperCase() + field.slice(1)} *</label>
                     <input
