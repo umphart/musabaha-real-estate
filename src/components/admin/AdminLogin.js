@@ -15,7 +15,7 @@ const AdminLogin = ({ onAdminLogin }) => {
   const [loading, setLoading] = useState(false);
 
   // Use the correct backend URL - adjust port if needed
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'musabaha-homes.onrender.com';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

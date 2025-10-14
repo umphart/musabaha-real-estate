@@ -43,7 +43,7 @@ const [plots, setPlots] = useState([]); // Available plots from API
   });
  
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
 
   // Get auth token from localStorage
   const getAuthToken = () => {
@@ -122,7 +122,7 @@ const [plots, setPlots] = useState([]); // Available plots from API
 useEffect(() => {
   const fetchPlots = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/plots");
+      const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
       const data = await res.json();
       console.log("Fetched plots:", data);
       
@@ -200,7 +200,7 @@ useEffect(() => {
   // Add this function to your component
 const fetchPlots = async () => {
   try {
-    const res = await fetch("http://localhost:5000/api/plots");
+    const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
     const data = await res.json();
     console.log("Fetched plots:", data);
     

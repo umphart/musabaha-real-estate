@@ -23,7 +23,7 @@ const AdminPaymentApproval = () => {
   const fetchAllPayments = async () => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/user-subsequent-payments"
+        "musabaha-homes.onrender.com/api/user-subsequent-payments"
       );
       const data = await res.json();
 
@@ -118,7 +118,7 @@ const AdminPaymentApproval = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/user-subsequent-payments/${paymentId}/status`,
+        `musabaha-homes.onrender.com/api/user-subsequent-payments/${paymentId}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -262,7 +262,7 @@ const AdminPaymentApproval = () => {
                   <td>
                     {p.receipt_file ? (
                       <a
-                        href={`http://localhost:5000/uploads/receipts/${p.receipt_file}`}
+                        href={`musabaha-homes.onrender.com/uploads/receipts/${p.receipt_file}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="View Receipt"
