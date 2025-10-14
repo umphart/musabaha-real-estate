@@ -429,8 +429,7 @@ const handleProceedToPayment = (subscription) => {
       {/* 🔹 Modal Header with Account Info */}
       <div style={styles.modalHeader}>
         <div style={styles.modalTitle}>
-          <FiCreditCard style={styles.modalTitleIcon} />
-          <h3>Payment Details</h3>
+
         </div>
 
         <button 
@@ -1065,16 +1064,22 @@ const styles = {
     backdropFilter: 'blur(4px)',
     animation: 'fadeIn 0.3s ease-out'
   },
-  modalContent: {
-    background: 'white',
-    borderRadius: '20px',
-    width: '100%',
-    maxWidth: '700px',
-    maxHeight: '90vh',
-    overflow: 'hidden',
-    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
-    animation: 'slideUp 0.4s ease-out'
-  },
+modalContent: {
+  background: 'white',
+  borderRadius: '20px',
+  width: '100%',
+  maxWidth: '700px',
+  height: 'auto',
+  maxHeight: '85vh', // slightly smaller than full height
+  display: 'flex',
+  flexDirection: 'column', // ✅ make body scrollable, footer fixed
+  overflow: 'hidden',
+  boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
+  animation: 'slideUp 0.4s ease-out'
+},
+
+
+
   modalHeader: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -1107,11 +1112,13 @@ const styles = {
       color: '#374151'
     }
   },
-  modalBody: {
-    padding: '24px',
-    maxHeight: 'calc(90vh - 80px)',
-    overflowY: 'auto'
-  },
+modalBody: {
+  padding: '20px 24px',
+  flex: 1, // ✅ take remaining space
+  overflowY: 'auto',
+  minHeight: 0 // ✅ prevents layout overflow
+},
+
   paymentForm: {
     display: 'flex',
     flexDirection: 'column',
@@ -1245,7 +1252,7 @@ const styles = {
     height: '18px',
     cursor: 'pointer'
   },
- modalActions: {
+modalActions: {
   display: 'flex',
   gap: '12px',
   justifyContent: 'flex-end',
