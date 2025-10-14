@@ -1245,12 +1245,17 @@ const styles = {
     height: '18px',
     cursor: 'pointer'
   },
-  modalActions: {
-    display: 'flex',
-    gap: '12px',
-    justifyContent: 'flex-end',
-    marginTop: '8px'
-  },
+ modalActions: {
+  display: 'flex',
+  gap: '12px',
+  justifyContent: 'flex-end',
+  padding: '16px 24px',
+  borderTop: '1px solid #f1f5f9',
+  background: '#fff', // ✅ ensure footer visible
+  position: 'sticky',
+  bottom: 0
+},
+
   cancelButton: {
     padding: '12px 24px',
     background: 'transparent',
