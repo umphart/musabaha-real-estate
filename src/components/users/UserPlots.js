@@ -113,95 +113,39 @@ const UserPlots = ({ user }) => {
         };
     }
   };
-
-  const handleProceedToPayment = (subscription) => {
+const copyToClipboard = (text) => {
+  navigator.clipboard.writeText(text).then(() => {
     Swal.fire({
-      title: '<span style="font-size:16px;font-weight:600;">💰 Payment Instructions</span>',
-      html: `
-        <div style="text-align:left;font-size:14px;line-height:1.5;">
-          <p style="margin-bottom:16px;color:#374151;"><strong>Bank Transfer Details:</strong></p>
-
-          <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:16px;border-radius:12px;margin:12px 0;">
-            <p style="margin:0 0 12px 0;font-weight:600;display:flex;align-items:center;gap:8px;">
-              <span>🏦</span> Bank Account Details
-            </p>
-            <div style="background:rgba(255,255,255,0.2);padding:12px;border-radius:8px;">
-              <p style="margin:8px 0;display:flex;align-items:center;gap:8px;">
-                <strong>Bank:</strong> Moniepoint MFB
-              </p>
-              <p style="margin:8px 0;display:flex;align-items:center;gap:8px;">
-                <strong>Account No:</strong> 
-                <span id="acct1" style="font-family:monospace;">4957926955</span>
-                <button id="copy1" style="background:white;color:#667eea;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;">
-                  📋 Copy
-                </button>
-              </p>
-              <p style="margin:8px 0;"><strong>Name:</strong> Musabaha Homes and Related Services</p>
-            </div>
-          </div>
-
-          <div style="background:#fffaf0;padding:16px;border-radius:12px;border-left:4px solid #ed8936;margin-top:16px;">
-            <p style="margin:0 0 12px 0;font-weight:600;color:#744210;display:flex;align-items:center;gap:8px;">
-              💰 Payment Summary
-            </p>
-            <div style="display:grid;gap:8px;">
-              <p style="margin:0;display:flex;justify-content:space-between;">
-                <span>Initial Deposit:</span>
-                <strong>${formatCurrency(calculateInitialPaymentAmount(subscription))}</strong>
-              </p>
-              <p style="margin:0;display:flex;justify-content:space-between;">
-                <span>Total Price:</span>
-                <strong>${formatCurrency(subscription.price)}</strong>
-              </p>
-              <p style="margin:8px 0 0 0;font-size:12px;color:#744210;font-style:italic;">
-                <strong>Note:</strong> Make payment to the account above and upload your receipt.
-              </p>
-            </div>
-          </div>
-        </div>
-      `,
-      icon: 'info',
-      confirmButtonText: 'I Understand & Proceed',
-      confirmButtonColor: '#667eea',
-      showCancelButton: true,
-      cancelButtonText: 'Cancel',
-      width: '500px',
-      customClass: {
-        popup: 'animate__animated animate__zoomIn'
-      },
-      didOpen: () => {
-        const copyAction = (id, btnId) => {
-          const text = document.getElementById(id).innerText;
-          const btn = document.getElementById(btnId);
-          navigator.clipboard.writeText(text).then(() => {
-            const oldText = btn.innerText;
-            btn.innerText = "✅ Copied!";
-            btn.disabled = true;
-            setTimeout(() => {
-              btn.innerText = oldText;
-              btn.disabled = false;
-            }, 1500);
-          });
-        };
-
-        document.getElementById("copy1").addEventListener("click", () => copyAction("acct1", "copy1"));
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setSelectedSubscription(subscription);
-        const initialAmount = calculateInitialPaymentAmount(subscription);
-        setPaymentData({
-          amountSent: initialAmount,
-          paymentMethod: 'bank_transfer',
-          transactionDate: new Date().toISOString().split('T')[0],
-          notes: '',
-          receiptFile: null,
-          confirmed: false
-        });
-        setShowPaymentModal(true);
-      }
+      toast: true,
+      icon: 'success',
+      title: 'Account number copied!',
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 1200
     });
-  };
+  });
+};
+
+const handleProceedToPayment = (subscription) => {
+  // Set selected subscription
+  setSelectedSubscription(subscription);
+
+  // Define payment data defaults
+  const initialAmount = calculateInitialPaymentAmount(subscription);
+  setPaymentData({
+    amountSent: initialAmount,
+    paymentMethod: 'bank_transfer',
+    transactionDate: new Date().toISOString().split('T')[0],
+    notes: '',
+    receiptFile: null,
+    confirmed: false
+  });
+
+  // Show the payment modal directly (no Swal)
+  setShowPaymentModal(true);
+};
+
+
 
   const calculateInitialPaymentAmount = (subscription) => {
     return (subscription.number_of_plots * 500000).toFixed(2);
@@ -478,23 +422,94 @@ const UserPlots = ({ user }) => {
       )}
 
       {/* Payment Modal */}
-      {showPaymentModal && selectedSubscription && ( 
-        <div style={styles.modalOverlay} onClick={() => setShowPaymentModal(false)}>
-          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            
-            {/* Modal Header */}
-            <div style={styles.modalHeader}>
-              <div style={styles.modalTitle}>
-                <FiCreditCard style={styles.modalTitleIcon} />
-                <h3>Payment Details</h3>
-              </div>
-              <button 
-                style={styles.modalClose}
-                onClick={() => setShowPaymentModal(false)}
-              >
-                <FiX />
-              </button>
-            </div>
+{showPaymentModal && selectedSubscription && ( 
+  <div style={styles.modalOverlay} onClick={() => setShowPaymentModal(false)}>
+    <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+      
+      {/* 🔹 Modal Header with Account Info */}
+      <div style={styles.modalHeader}>
+        <div style={styles.modalTitle}>
+          <FiCreditCard style={styles.modalTitleIcon} />
+          <h3>Payment Details</h3>
+        </div>
+
+        <button 
+          style={styles.modalClose}
+          onClick={() => setShowPaymentModal(false)}
+        >
+          <FiX />
+        </button>
+      </div>
+
+      {/* 🔹 Account Numbers Section inside header */}
+<div style={{ 
+  background: '#f8f9fa',
+  border: '1px solid #e2e8f0',
+  borderRadius: 8,
+  padding: '14px 16px',
+  marginBottom: 15,
+  fontSize: 14,
+  color: '#1a202c'
+}}>
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    flexWrap: 'wrap',
+    gap: '10px',
+    alignItems: 'center'
+  }}>
+    {/* Moniepoint MFB */}
+    <div style={{display:'flex', alignItems:'center', gap:6}}>
+      <strong>🏦 Moniepoint MFB:</strong>
+      <span style={{fontFamily:'monospace'}}>4957926955</span>
+      <button 
+        onClick={() => copyToClipboard('4957926955')}
+        style={{
+          background: '#4f46e5', color: 'white', border: 'none',
+          borderRadius: 5, padding: '4px 8px', fontSize: 12, cursor: 'pointer'
+        }}
+      >
+        📋 Copy
+      </button>
+    </div>
+
+    {/* Stanbic IBTC */}
+    <div style={{display:'flex', alignItems:'center', gap:6}}>
+      <strong>🏦 Stanbic IBTC:</strong>
+      <span style={{fontFamily:'monospace'}}>0069055648</span>
+      <button 
+        onClick={() => copyToClipboard('0069055648')}
+        style={{
+          background: '#2563eb', color: 'white', border: 'none',
+          borderRadius: 5, padding: '4px 8px', fontSize: 12, cursor: 'pointer'
+        }}
+      >
+        📋 Copy
+      </button>
+    </div>
+  </div>
+
+  {/* Shared Account Name */}
+  <p style={{
+    marginTop: 10,
+    fontStyle: 'italic',
+    color: '#555',
+    textAlign: 'center'
+  }}>
+    Account Name: <strong>Musabaha Homes and Related Services</strong>
+  </p>
+
+  <small style={{
+    color:'#555', 
+    fontStyle:'italic', 
+    display:'block',
+    textAlign: 'center',
+    marginTop: 4
+  }}>
+    💡 After payment, upload your receipt below to confirm your transaction.
+  </small>
+</div>
+
 
             {/* Modal Body */}
             <div style={styles.modalBody}>
