@@ -190,7 +190,7 @@ const handleProceedToPayment = (subscription) => {
         formData.append('receipt', paymentData.receiptFile);
       }
 
-      const response = await fetch('hhttps://musabaha-homes.onrender.com/api/user-payments', {
+      const response = await fetch('https://musabaha-homes.onrender.com/api/user-payments', {
         method: 'POST',
         body: formData
       });
