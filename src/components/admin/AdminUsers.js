@@ -47,7 +47,7 @@ const AdminUsers = () => {
     admin: ''
   });
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
 
   // Get auth token from localStorage
   const getAuthToken = () => {
@@ -127,7 +127,7 @@ const AdminUsers = () => {
   useEffect(() => {
     const fetchPlots = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/plots");
+        const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
         const data = await res.json();
         console.log("Fetched plots:", data);
         
@@ -185,7 +185,7 @@ const AdminUsers = () => {
 
   const fetchPlots = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/plots");
+      const res = await fetch("http://https://musabaha-homes.onrender.comt:5000/api/plots");
       const data = await res.json();
       console.log("Fetched plots:", data);
       
