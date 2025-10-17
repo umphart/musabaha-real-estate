@@ -2822,7 +2822,7 @@ const DashboardHome = ({ dashboardData, loading, notifications, subscriptionStat
                     
                     <button 
                       className="whatsapp-btn"
-                      onClick={() => window.open('https://wa.me/2347038192719?text=Hello%20Musabaha%20Homes%20LTD,%20I%20need%20assistance%20with%20my%20plot%20application/payment.', '_blank')}
+                      onClick={() => window.open('https://wa.me/2349039108853?text=Hello%20Musabaha%20Homes%20LTD,%20I%20need%20assistance%20with%20my%20plot%20application/payment.', '_blank')}
                       style={{ marginTop: '16px' }}
                     >
                       <i className="fab fa-whatsapp"></i> Contact Support via WhatsApp

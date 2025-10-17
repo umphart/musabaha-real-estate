@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import "./AdminPaymentApproval.css";
 import { FiEye, FiCheck, FiX } from "react-icons/fi";
 import { BadgeNaira, TrendingUp, Users, Clock } from "lucide-react";
 import Swal from "sweetalert2";
@@ -14,6 +13,254 @@ const AdminPaymentApproval = () => {
     approvedPayments: 0,
     totalUsers: 0,
   });
+
+  // Container styles
+  const containerStyles = {
+    padding: "20px",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    maxWidth: "1200px",
+    margin: "0 auto",
+    backgroundColor: "#f5f6fa"
+  };
+
+  // Loading styles
+  const loadingStyles = {
+    textAlign: "center",
+    padding: "40px",
+    fontSize: "18px",
+    color: "#555"
+  };
+
+  // Stats grid styles
+  const statsGridStyles = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: "20px",
+    marginBottom: "30px"
+  };
+
+  const statCardStyles = {
+    background: "white",
+    borderRadius: "10px",
+    padding: "20px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+    display: "flex",
+    alignItems: "center",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease"
+  };
+
+  const statIconStyles = {
+    width: "60px",
+    height: "60px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: "15px",
+    color: "white"
+  };
+
+  const statIconVariants = {
+    totalDeposits: {
+      ...statIconStyles,
+      backgroundColor: "#10b981"
+    },
+    pendingPayments: {
+      ...statIconStyles,
+      backgroundColor: "#f59e0b"
+    },
+    approvedPayments: {
+      ...statIconStyles,
+      backgroundColor: "#3b82f6"
+    },
+    totalUsers: {
+      ...statIconStyles,
+      backgroundColor: "#8b5cf6"
+    }
+  };
+
+  const statContentStyles = {
+    flex: "1"
+  };
+
+  const statValueStyles = {
+    margin: "0",
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#1f2937"
+  };
+
+  const statLabelStyles = {
+    margin: "5px 0 0",
+    color: "#6b7280",
+    fontSize: "14px"
+  };
+
+  // Filter controls styles
+  const filterControlsStyles = {
+    marginBottom: "20px",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px"
+  };
+
+  const filterLabelStyles = {
+    fontWeight: "500",
+    color: "#374151"
+  };
+
+  const filterSelectStyles = {
+    padding: "8px 12px",
+    border: "1px solid #d1d5db",
+    borderRadius: "6px",
+    backgroundColor: "white",
+    fontSize: "14px",
+    transition: "border-color 0.3s ease"
+  };
+
+  // Table styles
+  const tableResponsiveStyles = {
+    overflowX: "auto",
+    background: "white",
+    borderRadius: "8px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+  };
+
+  const tableStyles = {
+    width: "100%",
+    borderCollapse: "collapse",
+    minWidth: "1000px"
+  };
+
+  // COLORED TABLE HEADER STYLES
+  const thStyles = {
+    padding: "16px 15px",
+    textAlign: "left",
+    background: "linear-gradient(135deg, #2c3e50, #34495e)",
+    color: "white",
+    fontWeight: "600",
+    fontSize: "14px",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    border: "none",
+    position: "relative"
+  };
+
+  const tdStyles = {
+    padding: "14px 15px",
+    textAlign: "left",
+    borderBottom: "1px solid #e5e7eb",
+    color: "#4b5563",
+    fontSize: "14px"
+  };
+
+  const trStyles = {
+    transition: "background-color 0.2s ease"
+  };
+
+  // Status badge styles
+  const statusBadgeBase = {
+    padding: "6px 12px",
+    borderRadius: "12px",
+    fontSize: "12px",
+    fontWeight: "500",
+    display: "inline-block",
+    textAlign: "center",
+    minWidth: "80px"
+  };
+
+  const statusBadgeStyles = {
+    pending: {
+      ...statusBadgeBase,
+      backgroundColor: "#fffbeb",
+      color: "#f59e0b"
+    },
+    approved: {
+      ...statusBadgeBase,
+      backgroundColor: "#ecfdf5",
+      color: "#10b981"
+    },
+    rejected: {
+      ...statusBadgeBase,
+      backgroundColor: "#fef2f2",
+      color: "#ef4444"
+    }
+  };
+
+  // Action buttons styles
+  const actionButtonsStyles = {
+    display: "flex",
+    gap: "8px",
+    justifyContent: "center",
+    alignItems: "center"
+  };
+
+  const actionButtonBase = {
+    padding: "8px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "16px",
+    transition: "all 0.3s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "36px",
+    height: "36px"
+  };
+
+  const approveButtonStyles = {
+    ...actionButtonBase,
+    color: "#28a745",
+    backgroundColor: "rgba(40, 167, 69, 0.1)",
+    border: "1px solid rgba(40, 167, 69, 0.2)"
+  };
+
+  const rejectButtonStyles = {
+    ...actionButtonBase,
+    color: "#dc3545",
+    backgroundColor: "rgba(220, 53, 69, 0.1)",
+    border: "1px solid rgba(220, 53, 69, 0.2)"
+  };
+
+  // Receipt link styles
+  const receiptLinkStyles = {
+    color: "#007bff",
+    textDecoration: "none",
+    fontSize: "18px",
+    padding: "8px",
+    borderRadius: "6px",
+    transition: "all 0.3s ease",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0, 123, 255, 0.1)",
+    border: "1px solid rgba(0, 123, 255, 0.2)",
+    width: "36px",
+    height: "36px"
+  };
+
+  const noReceiptStyles = {
+    fontSize: "0.9em",
+    color: "#9ca3af",
+    fontStyle: "italic"
+  };
+
+  const actionCompleteStyles = {
+    fontSize: "0.9em",
+    color: "#6c757d",
+    fontStyle: "italic"
+  };
+
+  // Title styles
+  const titleStyles = {
+    color: "#2c3e50",
+    fontSize: "28px",
+    fontWeight: "600",
+    marginBottom: "24px",
+    borderBottom: "2px solid #3498db",
+    paddingBottom: "8px"
+  };
 
   useEffect(() => {
     fetchAllPayments();
@@ -161,141 +408,144 @@ const AdminPaymentApproval = () => {
             p.status.toLowerCase() === filterStatus.toLowerCase()
         );
 
-  if (loading) return <p>Loading payments...</p>;
+  if (loading) return <div style={containerStyles}><p style={loadingStyles}>Loading payments...</p></div>;
 
   return (
-    <div className="admin-payments-container">
-      <h2>Admin Payment Approval</h2>
+    <div style={containerStyles}>
+      <h2 style={titleStyles}>Admin Payment Approval</h2>
 
       {/* Stats Cards */}
-      <div className="stats-grid">
-<div className="stat-card">
-  <div className="stat-icon total-deposits">
-    <span className="text-2xl font-bold">₦</span>
-  </div>
-  <div className="stat-content">
-    <h3>{formatCurrency(stats.totalDeposited)}</h3>
-    <p>Total Deposited</p>
-  </div>
-</div>
+      <div style={statsGridStyles}>
+        <div style={statCardStyles}>
+          <div style={statIconVariants.totalDeposits}>
+            <span style={{fontSize: "20px", fontWeight: "bold"}}>₦</span>
+          </div>
+          <div style={statContentStyles}>
+            <h3 style={statValueStyles}>{formatCurrency(stats.totalDeposited)}</h3>
+            <p style={statLabelStyles}>Total Deposited</p>
+          </div>
+        </div>
 
-
-        <div className="stat-card">
-          <div className="stat-icon pending-payments">
+        <div style={statCardStyles}>
+          <div style={statIconVariants.pendingPayments}>
             <Clock size={24} />
           </div>
-          <div className="stat-content">
-            <h3>{stats.pendingPayments}</h3>
-            <p>Pending Payments</p>
+          <div style={statContentStyles}>
+            <h3 style={statValueStyles}>{stats.pendingPayments}</h3>
+            <p style={statLabelStyles}>Pending Payments</p>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon approved-payments">
+        <div style={statCardStyles}>
+          <div style={statIconVariants.approvedPayments}>
             <TrendingUp size={24} />
           </div>
-          <div className="stat-content">
-            <h3>{stats.approvedPayments}</h3>
-            <p>Approved Payments</p>
+          <div style={statContentStyles}>
+            <h3 style={statValueStyles}>{stats.approvedPayments}</h3>
+            <p style={statLabelStyles}>Approved Payments</p>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon total-users">
+        <div style={statCardStyles}>
+          <div style={statIconVariants.totalUsers}>
             <Users size={24} />
           </div>
-          <div className="stat-content">
-            <h3>{stats.totalUsers}</h3>
-            <p>Total Users</p>
+          <div style={statContentStyles}>
+            <h3 style={statValueStyles}>{stats.totalUsers}</h3>
+            <p style={statLabelStyles}>Total Users</p>
           </div>
         </div>
       </div>
 
       {/* Filter Control */}
-      <div className="filter-controls">
-        <label>
+      <div style={filterControlsStyles}>
+        <label style={filterLabelStyles}>
           Filter by status:
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="all">All</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
         </label>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          style={filterSelectStyles}
+        >
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
       </div>
 
       {/* Table */}
       {filteredPayments.length === 0 ? (
-        <p>No payments found.</p>
+        <p style={{textAlign: "center", padding: "40px", color: "#6b7280"}}>No payments found.</p>
       ) : (
-        <div className="table-responsive">
-          <table className="payments-table">
+        <div style={tableResponsiveStyles}>
+          <table style={tableStyles}>
             <thead>
               <tr>
-                <th>#</th>
-                <th>User Name</th>
-                <th>Contact</th>
-                <th>Amount</th>
-                <th>Method</th>
-                <th>Note</th>
-                <th>Date</th>
-                <th>Outstanding</th>
-                <th>Receipt</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th style={thStyles}>#</th>
+                <th style={thStyles}>User Name</th>
+                <th style={thStyles}>Contact</th>
+                <th style={thStyles}>Amount</th>
+                <th style={thStyles}>Method</th>
+                <th style={thStyles}>Note</th>
+                <th style={thStyles}>Date</th>
+                <th style={thStyles}>Outstanding</th>
+                <th style={thStyles}>Receipt</th>
+                <th style={thStyles}>Status</th>
+                <th style={thStyles}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredPayments.map((p, idx) => (
-                <tr key={p.id}>
-                  <td>{idx + 1}</td>
-                  <td>{p.user_name || "N/A"}</td>
-                  <td>{p.user_contact || "N/A"}</td>
-                  <td>{formatCurrency(p.amount)}</td>
-                  <td>{p.payment_method || "N/A"}</td>
-                  <td>{p.note || p.notes || "-"}</td>
-                  <td>{new Date(p.created_at).toLocaleDateString()}</td>
-                  <td>{formatCurrency(p.outstanding_balance)}</td>
-                  <td>
+                <tr key={p.id} style={trStyles}>
+                  <td style={tdStyles}>{idx + 1}</td>
+                  <td style={tdStyles}>{p.user_name || "N/A"}</td>
+                  <td style={tdStyles}>{p.user_contact || "N/A"}</td>
+                  <td style={tdStyles}>{formatCurrency(p.amount)}</td>
+                  <td style={tdStyles}>{p.payment_method || "N/A"}</td>
+                  <td style={tdStyles}>{p.note || p.notes || "-"}</td>
+                  <td style={tdStyles}>{new Date(p.created_at).toLocaleDateString()}</td>
+                  <td style={tdStyles}>{formatCurrency(p.outstanding_balance)}</td>
+                  <td style={tdStyles}>
                     {p.receipt_file ? (
                       <a
                         href={`https://musabaha-homes.onrender.com/uploads/receipts/${p.receipt_file}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="View Receipt"
+                        style={receiptLinkStyles}
                       >
                         <FiEye />
                       </a>
                     ) : (
-                      <span className="no-receipt">No Receipt</span>
+                      <span style={noReceiptStyles}>No Receipt</span>
                     )}
                   </td>
-                  <td>
-                    <span className={`status-badge ${p.status?.toLowerCase()}`}>
+                  <td style={tdStyles}>
+                    <span style={statusBadgeStyles[p.status?.toLowerCase()] || statusBadgeStyles.pending}>
                       {p.status || "Pending"}
                     </span>
                   </td>
-                  <td>
+                  <td style={tdStyles}>
                     {p.status?.toLowerCase() === "pending" ? (
-                      <div className="action-buttons">
+                      <div style={actionButtonsStyles}>
                         <button
-                          className="btn-approve"
+                          style={approveButtonStyles}
                           onClick={() => handleStatusUpdate(p.id, "approved")}
+                          title="Approve Payment"
                         >
                           <FiCheck />
                         </button>
                         <button
-                          className="btn-reject"
+                          style={rejectButtonStyles}
                           onClick={() => handleStatusUpdate(p.id, "rejected")}
+                          title="Reject Payment"
                         >
                           <FiX />
                         </button>
                       </div>
                     ) : (
-                      <span className="action-complete">Processed</span>
+                      <span style={actionCompleteStyles}>Processed</span>
                     )}
                   </td>
                 </tr>
