@@ -185,9 +185,10 @@ const AdminUsers = () => {
 
   const fetchPlots = async () => {
     try {
-      const res = await fetch("http://https://musabaha-homes.onrender.comt:5000/api/plots");
+      const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
       const data = await res.json();
      
+
       
       if (data.success) {
         setPlots(data.data.filter(plot => plot.status === "Available"));
@@ -318,7 +319,7 @@ const AdminUsers = () => {
       });
 
       const data = await response.json();
-    
+   
       
       if (data.success) {
         setPaymentData({
@@ -352,7 +353,7 @@ const AdminUsers = () => {
 
       if (response.ok) {
         const data = await response.json();
-      
+        
         if (data.success) {
           return data.data;
         }
@@ -444,6 +445,9 @@ const handleImportCSV = async () => {
           raw: false,
           defval: ''
         });
+
+       
+
         if (jsonData.length === 0) {
           showAlert('error', 'CSV file is empty.');
           setImportLoading(false);
@@ -454,11 +458,85 @@ const handleImportCSV = async () => {
         let successCount = 0;
         let errorCount = 0;
         const errors = [];
+        const dateErrors = [];
+
+        // Robust date parser function
+        const parseDate = (dateValue) => {
+          if (!dateValue) return new Date().toISOString().split('T')[0];
+          
+          // Handle Excel serial numbers
+          if (typeof dateValue === 'number') {
+            const excelEpoch = new Date(1899, 11, 30);
+            const date = new Date(excelEpoch.getTime() + dateValue * 86400000);
+            return date.toISOString().split('T')[0];
+          }
+          
+          const dateStr = dateValue.toString().trim();
+          
+          // Check if already in correct format (YYYY-MM-DD)
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            return dateStr;
+          }
+          
+          // Handle various date formats
+          const separators = /[\/\-\.]/;
+          const parts = dateStr.split(separators);
+          
+          if (parts.length === 3) {
+            let day, month, year;
+            
+            // Detect format based on part lengths
+            if (parts[0].length === 4) {
+              // YYYY-MM-DD format
+              [year, month, day] = parts;
+            } else if (parseInt(parts[2]) > 31 || parts[2].length === 4) {
+              // DD-MM-YYYY format
+              [day, month, year] = parts;
+            } else {
+              // MM-DD-YYYY format
+              [month, day, year] = parts;
+            }
+            
+            // Handle 2-digit years
+            if (year.length === 2) {
+              year = parseInt(year) < 50 ? `20${year}` : `19${year}`;
+            }
+            
+            // Pad components
+            year = year.padStart(4, '0');
+            month = month.padStart(2, '0');
+            day = day.padStart(2, '0');
+            
+            // Validate the date
+            const date = new Date(`${year}-${month}-${day}`);
+            if (!isNaN(date.getTime())) {
+              return date.toISOString().split('T')[0];
+            }
+          }
+          
+          // Try direct parsing as last resort
+          const parsedDate = new Date(dateStr);
+          if (!isNaN(parsedDate.getTime())) {
+            return parsedDate.toISOString().split('T')[0];
+          }
+          
+          // Final fallback
+          return new Date().toISOString().split('T')[0];
+        };
+
+        // Date validation function
+        const isValidDate = (dateStr) => {
+          const regex = /^\d{4}-\d{2}-\d{2}$/;
+          if (!regex.test(dateStr)) return false;
+          
+          const date = new Date(dateStr);
+          return !isNaN(date.getTime()) && dateStr === date.toISOString().split('T')[0];
+        };
 
         // Process each row
         for (const [index, row] of jsonData.entries()) {
           try {
-           
+       
 
             // Skip rows with missing essential data
             if (!row.name || !row.name.toString().trim()) {
@@ -487,96 +565,21 @@ const handleImportCSV = async () => {
 
             // Handle plot_taken - ensure it's treated as string
             let plotTaken = row.plot_taken ? row.plot_taken.toString().trim() : '';
-            
-            // Fix common concatenated plot numbers
-            if (plotTaken === '41') plotTaken = '4,1';
-            if (plotTaken === '200820102012') plotTaken = '2008,2010,2012';
-            if (plotTaken === '1744/1745') plotTaken = '1744,1745';
-            if (plotTaken === '1743/1742') plotTaken = '1743,1742';
-            if (plotTaken === '3945/3947/3946/3948') plotTaken = '3945,3947,3946,3948';
-            if (plotTaken === '2014/2015') plotTaken = '2014,2015';
-            if (plotTaken === '2016/2017') plotTaken = '2016,2017';
 
-            // FIXED DATE HANDLING - Properly handle DD/MM/YYYY format
+            // IMPROVED DATE HANDLING
             let formattedDate = '';
-            if (row.date_taken) {
-              const dateValue = row.date_taken;
+            try {
+              formattedDate = parseDate(row.date_taken);
               
-              if (typeof dateValue === 'number') {
-                // Excel serial number (for dates like 45676.04207175926)
-                const excelEpoch = new Date(1899, 11, 30);
-                const date = new Date(excelEpoch.getTime() + dateValue * 86400000);
-                formattedDate = date.toISOString().split('T')[0];
-                
-              } else {
-                // String date - handle DD/MM/YYYY format
-                const dateStr = dateValue.toString().trim();
-              
-                
-                if (dateStr.includes('/')) {
-                  // Handle DD/MM/YYYY format (like "19/01/2025")
-                  const parts = dateStr.split('/');
-                  if (parts.length === 3) {
-                    const day = parts[0].padStart(2, '0');
-                    const month = parts[1].padStart(2, '0');
-                    let year = parts[2];
-                    
-                    // Handle 2-digit years
-                    if (year.length === 2) {
-                      year = `20${year}`;
-                    }
-                    
-                    // Validate date components
-                    const monthNum = parseInt(month);
-                    const dayNum = parseInt(day);
-                    
-                    if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
-                      formattedDate = `${year}-${month}-${day}`;
-                     
-                    } else {
-                      console.warn(`Invalid date components: ${dateStr}`);
-                      formattedDate = new Date().toISOString().split('T')[0];
-                    }
-                  } else {
-                    console.warn(`Unexpected date format: ${dateStr}`);
-                    formattedDate = new Date().toISOString().split('T')[0];
-                  }
-                } else if (dateStr.includes('-')) {
-                  // Already in YYYY-MM-DD format, validate it
-                  const parts = dateStr.split('-');
-                  if (parts.length === 3) {
-                    const year = parts[0];
-                    const month = parts[1];
-                    const day = parts[2];
-                    
-                    const monthNum = parseInt(month);
-                    const dayNum = parseInt(day);
-                    
-                    if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
-                      formattedDate = dateStr; // Use as-is if valid
-                    } else {
-                     
-                      formattedDate = new Date().toISOString().split('T')[0];
-                    }
-                  }
-                } else {
-                  // Try to parse as Excel serial number if it's a number string
-                  const serialNumber = parseFloat(dateStr);
-                  if (!isNaN(serialNumber)) {
-                    const excelEpoch = new Date(1899, 11, 30);
-                    const date = new Date(excelEpoch.getTime() + serialNumber * 86400000);
-                    formattedDate = date.toISOString().split('T')[0];
-                    console.log(`Excel string date conversion: ${dateStr} -> ${formattedDate}`);
-                  } else {
-                  
-                    formattedDate = new Date().toISOString().split('T')[0];
-                  }
-                }
+              if (!isValidDate(formattedDate)) {
+                throw new Error(`Invalid date format: ${row.date_taken}`);
               }
-            } else {
-              // No date provided, use current date
+              
+              
+            } catch (error) {
+              dateErrors.push(`Row ${index + 2}: ${error.message}`);
               formattedDate = new Date().toISOString().split('T')[0];
-              console.log(`No date provided, using current date: ${formattedDate}`);
+              console.warn(`Date conversion failed for "${row.date_taken}", using current date: ${formattedDate}`);
             }
 
             // Calculate plot_number from plot_taken
@@ -644,7 +647,7 @@ const handleImportCSV = async () => {
               plot_number: plotNumber
             };
 
-      
+            
 
             // Validate critical fields before sending
             if (!userData.name) {
@@ -678,8 +681,7 @@ const handleImportCSV = async () => {
             
             if (result.success) {
               successCount++;
-          
-        
+            
             } else {
               errorCount++;
               const errorMsg = `Row ${index + 2}: ${result.message || 'Failed to create user'}`;
@@ -697,13 +699,21 @@ const handleImportCSV = async () => {
         setShowImportModal(false);
         setCsvFile(null);
         
-        // Show results
+        // Show results with date warnings if any
+        let resultMessage = '';
         if (successCount > 0) {
           if (errorCount > 0) {
-            showAlert('warning', `Imported ${successCount} users successfully. ${errorCount} failed. Check console for details.`);
+            resultMessage = `Imported ${successCount} users successfully. ${errorCount} failed.`;
           } else {
-            showAlert('success', `Successfully imported ${successCount} users!`);
+            resultMessage = `Successfully imported ${successCount} users!`;
           }
+          
+          // Add date conversion warnings if any
+          if (dateErrors.length > 0) {
+            resultMessage += ` ${dateErrors.length} date conversion issues occurred.`;
+          }
+          
+          showAlert(errorCount > 0 ? 'warning' : 'success', resultMessage);
           fetchUsers();
         } else {
           showAlert('error', `No users were imported. ${errors.length > 0 ? errors[0] : 'Please check your CSV format.'}`);
@@ -712,6 +722,9 @@ const handleImportCSV = async () => {
         // Log all errors for debugging
         if (errors.length > 0) {
           console.error('Import errors:', errors);
+        }
+        if (dateErrors.length > 0) {
+          console.warn('Date conversion warnings:', dateErrors);
         }
 
       } catch (error) {
@@ -735,8 +748,6 @@ const handleImportCSV = async () => {
     setImportLoading(false);
   }
 };
-
-
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     try {
@@ -1091,7 +1102,7 @@ const handleImportCSV = async () => {
   );
 // Add this function before your return statement
 const formatDateForDisplay = (dateString) => {
-  if (!dateString) return 'N/A';
+  if (!dateString) return '12345679';
   
   try {
     // Create date object and format to YYYY-MM-DD
@@ -1218,7 +1229,7 @@ const formatDateForDisplay = (dateString) => {
               <td>{user.contact}</td>
               <td>
                 <div className="plot-info">
-                  <span>{user.plot_taken || 'N/A'}</span>
+                  <span>{user.plot_taken || '12345679'}</span>
                 </div>
               </td>
               <td>{formatDateForDisplay(user.date_taken)}</td>
@@ -1233,13 +1244,13 @@ const formatDateForDisplay = (dateString) => {
                     </span>
                   ))
                 ) : (
-                  <span>N/A</span>
+                  <span>12345679</span>
                 )}
               </td>
               <td>
                 <div className="payment-schedule">
                   <FiCalendar className="icon" />
-                  <span>{user.payment_schedule || 'N/A'}</span>
+                  <span>{user.payment_schedule || '12345679'}</span>
                 </div>
               </td>
               <td>
@@ -1793,8 +1804,7 @@ const formatDateForDisplay = (dateString) => {
                   <li>Date format: YYYY-MM-DD</li>
                   <li>Multiple plots: Separate with commas (e.g., "A1, A2")</li>
                   <li>Multiple prices: Separate with commas (e.g., "3000000, 4000000")</li>
-                </ul>
-              
+                </ul>    
               </div>
 
               <div className="file-upload-section">
