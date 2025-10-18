@@ -35,7 +35,7 @@ const UserPlots = ({ user }) => {
       try {
         const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
         const result = await response.json();
-        console.log('Subscriptions fetch result:', result);
+      
         if (result.success) {
           setSubscriptions(result.data);
           

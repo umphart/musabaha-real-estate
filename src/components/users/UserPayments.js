@@ -32,8 +32,7 @@ const UserPayments = ({ user }) => {
           `https://musabaha-homes.onrender.com/api/user-payments/user/${user.id}`
         );
         const data = await res.json();
-        console.log(data)
-        if (data.success) {
+               if (data.success) {
           setPayments(data.payments);
         }
       } catch (err) {

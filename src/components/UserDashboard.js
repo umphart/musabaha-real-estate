@@ -282,7 +282,7 @@ const fetchDashboardData = async () => {
     try {
       const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
       const result = await response.json();
-      console.log("Subscription data:", result);
+     
 
       if (result.success) {
         const subscription = Array.isArray(result.data) ? result.data[0] : result.data;

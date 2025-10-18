@@ -297,7 +297,7 @@ const AdminRegisteredUsers = () => {
       if (!response.ok) throw new Error("Failed to fetch users");
 
       const data = await response.json();
-      console.log(data)
+    
       if (data.success) {
         setUsers(data.data);
       } else {

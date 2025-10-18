@@ -16,7 +16,7 @@ const UserSubsequentPayments = ({ user }) => {
           `https://musabaha-homes.onrender.com/api/user-subsequent-payments/user/${user.id}`
         );
         const data = await res.json();
-        console.log("Payment data:", data);
+       
 
         if (data.success) {
           setPayments(data.payments);

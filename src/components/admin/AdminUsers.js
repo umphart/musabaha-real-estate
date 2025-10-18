@@ -110,7 +110,7 @@ const AdminUsers = () => {
       }
 
       const data = await response.json();
-      console.log('Fetched users:', data);
+     
       if (data.success) {
         setUsers(data.data);
       } else {
@@ -129,7 +129,7 @@ const AdminUsers = () => {
       try {
         const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
         const data = await res.json();
-        console.log("Fetched plots:", data);
+        
         
         if (data.success) {
           setPlots(data.data.filter(plot => plot.status === "Available"));
@@ -187,7 +187,7 @@ const AdminUsers = () => {
     try {
       const res = await fetch("http://https://musabaha-homes.onrender.comt:5000/api/plots");
       const data = await res.json();
-      console.log("Fetched plots:", data);
+     
       
       if (data.success) {
         setPlots(data.data.filter(plot => plot.status === "Available"));
@@ -318,7 +318,7 @@ const AdminUsers = () => {
       });
 
       const data = await response.json();
-      console.log('Add payment response:', data);
+    
       
       if (data.success) {
         setPaymentData({
@@ -352,7 +352,7 @@ const AdminUsers = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Fetched payments for user:', data);
+      
         if (data.success) {
           return data.data;
         }
@@ -444,9 +444,6 @@ const handleImportCSV = async () => {
           raw: false,
           defval: ''
         });
-
-        console.log('Raw CSV Data:', jsonData);
-
         if (jsonData.length === 0) {
           showAlert('error', 'CSV file is empty.');
           setImportLoading(false);
@@ -461,7 +458,7 @@ const handleImportCSV = async () => {
         // Process each row
         for (const [index, row] of jsonData.entries()) {
           try {
-            console.log(`Processing row ${index + 1}:`, row);
+           
 
             // Skip rows with missing essential data
             if (!row.name || !row.name.toString().trim()) {
@@ -510,11 +507,11 @@ const handleImportCSV = async () => {
                 const excelEpoch = new Date(1899, 11, 30);
                 const date = new Date(excelEpoch.getTime() + dateValue * 86400000);
                 formattedDate = date.toISOString().split('T')[0];
-                console.log(`Excel date conversion: ${dateValue} -> ${formattedDate}`);
+                
               } else {
                 // String date - handle DD/MM/YYYY format
                 const dateStr = dateValue.toString().trim();
-                console.log(`Processing date string: "${dateStr}"`);
+              
                 
                 if (dateStr.includes('/')) {
                   // Handle DD/MM/YYYY format (like "19/01/2025")
@@ -535,7 +532,7 @@ const handleImportCSV = async () => {
                     
                     if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
                       formattedDate = `${year}-${month}-${day}`;
-                      console.log(`Date converted: ${dateStr} -> ${formattedDate}`);
+                     
                     } else {
                       console.warn(`Invalid date components: ${dateStr}`);
                       formattedDate = new Date().toISOString().split('T')[0];
@@ -558,7 +555,7 @@ const handleImportCSV = async () => {
                     if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
                       formattedDate = dateStr; // Use as-is if valid
                     } else {
-                      console.warn(`Invalid YYYY-MM-DD date: ${dateStr}`);
+                     
                       formattedDate = new Date().toISOString().split('T')[0];
                     }
                   }
@@ -571,7 +568,7 @@ const handleImportCSV = async () => {
                     formattedDate = date.toISOString().split('T')[0];
                     console.log(`Excel string date conversion: ${dateStr} -> ${formattedDate}`);
                   } else {
-                    console.warn(`Unrecognized date format: ${dateStr}`);
+                  
                     formattedDate = new Date().toISOString().split('T')[0];
                   }
                 }
@@ -647,7 +644,7 @@ const handleImportCSV = async () => {
               plot_number: plotNumber
             };
 
-            console.log('Final user data to send:', userData);
+      
 
             // Validate critical fields before sending
             if (!userData.name) {
@@ -681,7 +678,8 @@ const handleImportCSV = async () => {
             
             if (result.success) {
               successCount++;
-              console.log(`✓ Successfully imported: ${userData.name}`);
+          
+        
             } else {
               errorCount++;
               const errorMsg = `Row ${index + 2}: ${result.message || 'Failed to create user'}`;

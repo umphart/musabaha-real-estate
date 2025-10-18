@@ -39,7 +39,6 @@ const AdminPlots = () => {
     fetch("https://musabaha-homes.onrender.com/api/plots")
       .then(res => res.json())
       .then(data => {
-        console.log("Fetched plots:", data);
         if (data.success) setPlots(data.data);
         setLoading(false);
       })
@@ -103,7 +102,6 @@ const AdminPlots = () => {
 
       });
       const data = await res.json();
-      console.log(data)
       if (data.success) {
         setPlots([...plots, data.data]);
         Swal.fire({
