@@ -735,27 +735,7 @@ const handleImportCSV = async () => {
     setImportLoading(false);
   }
 };
-  // Download CSV template
-  const downloadCSVTemplate = () => {
-    const template = [
-      {
-        'Name': 'John Doe',
-        'Contact': '08012345678',
-        'Plot': 'A1, A2',
-        'Date': '2024-01-15',
-        'Price per Plot': '3000000, 4000000',
-        'Initial Deposit': '1000000',
-        'Payment Schedule': 'Monthly',
-        'Number of Plots': '2'
-      }
-    ];
 
-    const worksheet = XLSX.utils.json_to_sheet(template);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
-    XLSX.writeFile(workbook, 'users_import_template.csv');
-    showAlert('success', 'CSV template downloaded successfully.');
-  };
 
   const handleUpdateUser = async (e) => {
     e.preventDefault();
@@ -1814,15 +1794,7 @@ const formatDateForDisplay = (dateString) => {
                   <li>Multiple plots: Separate with commas (e.g., "A1, A2")</li>
                   <li>Multiple prices: Separate with commas (e.g., "3000000, 4000000")</li>
                 </ul>
-                
-                <div className="template-download">
-                  <button 
-                    className="btn btn-secondary" 
-                    onClick={downloadCSVTemplate}
-                  >
-                    <FiDownload className="icon" /> Download Template
-                  </button>
-                </div>
+              
               </div>
 
               <div className="file-upload-section">
