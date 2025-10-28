@@ -8,7 +8,7 @@ const LandingPage = () => {
       <section className="hero-section">
         <div className="hero-content">
           <h1>Welcome to MUSABAHA HOMES LTD.</h1>
-          <p>Your trusted partner for quality homes and real estate solutions</p>
+          <p>Making land and property ownership accessible, secure, and profitable</p>
           <div className="hero-buttons">
             <a href="#about" className="btn btn-primary">Learn More</a>
             <a href="login" className="btn btn-primary">Get Started</a>
@@ -23,19 +23,19 @@ const LandingPage = () => {
           <h2>Why Choose Us?</h2>
           <div className="features-grid">
             <div className="feature-card">
-              <div className="feature-icon">🏠</div>
-              <h3>Quality Homes</h3>
-              <p>We provide high-quality, affordable housing solutions tailored to your needs.</p>
+              <div className="feature-icon">🔒</div>
+              <h3>Secure & Verifiable</h3>
+              <p>All transactions are properly documented and backed by verifiable titles for long-term peace of mind.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">📍</div>
-              <h3>Prime Locations</h3>
-              <p>Our properties are strategically located with access to amenities and transportation.</p>
+              <div className="feature-icon">💼</div>
+              <h3>Income-Producing Assets</h3>
+              <p>Own income-producing assets in real estate through outright purchase or flexible installment plans.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🤝</div>
-              <h3>Trusted Service</h3>
-              <p>With years of experience, we've built a reputation for reliability and excellence.</p>
+              <div className="feature-icon">🏗️</div>
+              <h3>Diverse Portfolio</h3>
+              <p>Invest safely in residential, commercial, and strategic estate developments across Nigeria.</p>
             </div>
           </div>
         </div>
@@ -44,19 +44,50 @@ const LandingPage = () => {
       {/* About Section */}
       <section id="about" className="about-section">
         <div className="container">
-          <h2>About MHL</h2>
-          <p>MUSABAHA HOMES LTD. has been a leading real estate developer since 2005. We specialize in creating sustainable communities and providing housing solutions that meet the diverse needs of our clients. Our commitment to quality, innovation, and customer satisfaction has made us a trusted name in the industry.</p>
+          <h2>About MUSABAHA HOMES LTD.</h2>
+          <p>We are a registered leading real estate company in Nigeria (RC: 8176032) with a vision to make land and property ownership accessible, secure, and profitable for individuals and organizations across the country.</p>
+          <p>Our mission is to help people own income-producing assets in the real estate sector—whether through outright purchase or flexible installment plans. We are the trusted partner for hundreds of thousand clients looking to invest safely in residential, commercial, and strategic estate developments.</p>
+          <p>We pride ourselves on transparency, innovation, and legal compliance. Through our modern systems, including digital client record management, inspection support, and marketing tools, we are redefining the real estate experience in Northern Nigeria.</p>
+        </div>
+      </section>
+
+      {/* Core Values Section */}
+      <section className="values-section">
+        <div className="container">
+          <h2>Our Core Values</h2>
+          <div className="values-grid">
+            <div className="value-item">
+              <h3>Integrity & Trust</h3>
+              <p>Building lasting relationships through honest and reliable services</p>
+            </div>
+            <div className="value-item">
+              <h3>Client-Centered Service</h3>
+              <p>Putting our clients' needs and satisfaction at the forefront</p>
+            </div>
+            <div className="value-item">
+              <h3>Innovation & Growth</h3>
+              <p>Embracing modern technology and continuous improvement</p>
+            </div>
+            <div className="value-item">
+              <h3>Community Development</h3>
+              <p>Contributing to sustainable development and community growth</p>
+            </div>
+            <div className="value-item">
+              <h3>Transparency in Every Deal</h3>
+              <p>Ensuring clear and open communication in all transactions</p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Contact Section */}
       <section id="contact" className="contact-section">
         <div className="container">
-          <h2>Contact Us</h2>
+          <h2>Contact Us Today</h2>
           <div className="contact-info">
-            <p><strong>Address:</strong> No. 015, City Plaza Along Ring Road Western Bypass Along Yankaba Road, Kano State.</p>
-            <p><strong>Phone:</strong> +2349084220705, +2349039108863, +2347038192719</p>
-            <p><strong>Email:</strong> musababahomesth@gmail.com</p>
+            <p><strong>Headquarters:</strong> No.15 City Plaza, Along Ring Road Eastern Bypass, Hotoron Arewa, hannun tafiya yankaba daga hotoro round, Kano State</p>
+            <p><strong>Phone:</strong> 09064220705, 09039108853, 08037023070</p>
+            <p><strong>Email:</strong>musabahahomesltd@gmail.com</p>
           </div>
         </div>
       </section>
@@ -64,7 +95,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="landing-footer">
         <div className="container">
-          <p>&copy; {new Date().getFullYear()} MUSABAHA HOMES LTD. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} MUSABAHA HOMES LTD. (RC: 8176032) All rights reserved.</p>
         </div>
       </footer>
     </div>
