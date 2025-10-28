@@ -80,17 +80,22 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="contact-section">
-        <div className="container">
-          <h2>Contact Us Today</h2>
-          <div className="contact-info">
-            <p><strong>Headquarters:</strong> No.15 City Plaza, Along Ring Road Eastern Bypass, Hotoron Arewa, hannun tafiya yankaba daga hotoro round, Kano State</p>
-            <p><strong>Phone:</strong> 09064220705, 09039108853, 08037023070</p>
-            <p><strong>Email:</strong>musabahahomesltd@gmail.com</p>
-          </div>
-        </div>
-      </section>
+{/* Contact Section */}
+<section id="contact" className="contact-section">
+  <div className="container">
+    <h2>Contact Us Today</h2>
+    <div className="contact-info">
+      <p><strong>Headquarters:</strong> No.15 City Plaza, Along Ring Road Eastern Bypass, Hotoron Arewa, hannun tafiya yankaba daga hotoro round, Kano State</p>
+      <p><strong>Phone:</strong> 09064220705, 09039108853, 08037023070</p>
+      <p>
+        <strong>Email:</strong> 
+        <a href="mailto:musabahahomesltd@gmail.com" style={{color: 'white', textDecoration: 'none'}}>
+          musabahahomesltd@gmail.com
+        </a>
+      </p>
+    </div>
+  </div>
+</section>
 
       {/* Footer */}
       <footer className="landing-footer">
