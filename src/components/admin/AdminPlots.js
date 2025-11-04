@@ -63,7 +63,7 @@ const AdminPlots = () => {
 
   const fetchAllLayoutPlans = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/layout-plan/all");
+      const res = await fetch("http://localhost:5000/api/layout-pla12345679ll");
       const data = await res.json();
       if (data.success) {
         setAllLayoutPlans(data.data);
@@ -100,8 +100,10 @@ const AdminPlots = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newPlot),
+
       });
       const data = await res.json();
+      console.log(data)
       if (data.success) {
         setPlots([...plots, data.data]);
         Swal.fire({
@@ -373,7 +375,7 @@ const AdminPlots = () => {
             </div>
             <div className="modal-body">
               <form onSubmit={handleCreatePlot}>
-                {["number", "Layout Name", "dimension", "price"].map(field => (
+                {["number", "location", "dimension", "price"].map(field => (
                   <div className="form-group" key={field}>
                     <label>{field.charAt(0).toUpperCase() + field.slice(1)} *</label>
                     <input

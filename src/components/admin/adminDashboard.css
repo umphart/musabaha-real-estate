@@ -41,32 +41,28 @@ html, body {
 }
 
 /* Desktop States */
-.sidebar.desktop-collapsed {
-  width: 70px;
+.sidebar.mobile-open {
+  left: 0;
+  visibility: visible;
+}
+
+.sidebar.mobile-closed {
+  left: -250px;
+  visibility: hidden;
 }
 
 .sidebar.desktop-expanded {
   width: 250px;
 }
-/* Mobile Sidebar Styles */
-.sidebar-mobile-open {
-  transform: translateX(0);
-  visibility: visible;
+
+.sidebar.desktop-collapsed {
+  width: 70px;
 }
 
-.sidebar-mobile-closed {
-  transform: translateX(-100%);
-  visibility: hidden;
-}
 
-/* Desktop Sidebar Styles */
-.sidebar-desktop-expanded {
-  width: 250px;
-}
 
-.sidebar-desktop-collapsed {
-  width: 60px;
-}
+
+
 
 /* Sidebar Base Styles */
 .sidebar {
@@ -95,17 +91,6 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* Sidebar Overlay for Mobile */
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
 }
 
 /* Main Content Adjustments */
@@ -1926,3 +1911,4 @@ th {
     cursor: pointer;
   }
 }
+

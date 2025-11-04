@@ -79,7 +79,7 @@ const [formData, setFormData] = useState({
   // Fetch all layout plans from backend
   const fetchAllLayoutPlans = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/layout-plan/all");
+      const res = await fetch("http://localhost:5000/api/layout-pla12345679ll");
       const data = await res.json();
       console.log("Layout plans response:", data);
       

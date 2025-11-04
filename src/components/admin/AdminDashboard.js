@@ -92,20 +92,166 @@ const AdminDashboard = ({ onLogout }) => {
     }
   };
 
-  // Get sidebar class based on state
-  const getSidebarClass = () => {
+  // Inline styles for sidebar
+  const getSidebarStyles = () => {
+    const baseStyles = {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      height: '100vh',
+      background: 'linear-gradient(180deg, #4e73df 0%, #224abe 100%)',
+      color: 'white',
+      zIndex: 1000,
+      transition: 'all 0.3s ease',
+      overflowY: 'auto',
+      boxShadow: '0 0 15px rgba(0, 0, 0, 0.1)'
+    };
+
     if (isMobile) {
-      return sidebarOpen ? 'sidebar-mobile-open' : 'sidebar-mobile-closed';
+      return {
+        ...baseStyles,
+        width: '280px',
+        transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)'
+      };
+    } else {
+      return {
+        ...baseStyles,
+        width: sidebarCollapsed ? '70px' : '250px'
+      };
     }
-    return sidebarCollapsed ? 'sidebar-desktop-collapsed' : 'sidebar-desktop-expanded';
   };
 
-  // Get main content class based on state
-  const getMainContentClass = () => {
+  // Inline styles for main content
+  const getMainContentStyles = () => {
+    const baseStyles = {
+      flex: 1,
+      transition: 'all 0.3s ease',
+      minHeight: '100vh'
+    };
+
     if (isMobile) {
-      return sidebarOpen ? 'main-content-mobile-sidebar-open' : '';
+      return {
+        ...baseStyles,
+        marginLeft: '0'
+      };
+    } else {
+      return {
+        ...baseStyles,
+        marginLeft: sidebarCollapsed ? '70px' : '250px'
+      };
     }
-    return sidebarCollapsed ? 'main-content-desktop-sidebar-collapsed' : 'main-content-desktop-sidebar-expanded';
+  };
+
+  // Inline styles for mobile menu button
+  const mobileMenuBtnStyles = {
+    position: 'fixed',
+    top: '15px',
+    left: '15px',
+    zIndex: 1002,
+    background: '#4e73df',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    padding: '10px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
+  };
+
+  // Inline styles for overlay
+  const overlayStyles = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 999,
+    backdropFilter: 'blur(2px)'
+  };
+
+  // Inline styles for sidebar header
+  const sidebarHeaderStyles = {
+    padding: '20px 15px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: '60px'
+  };
+
+  // Inline styles for notification bell
+  const notificationBellStyles = {
+    position: 'relative',
+    cursor: 'pointer',
+    padding: '8px',
+    borderRadius: '50%',
+    transition: 'background-color 0.3s ease'
+  };
+
+  const notificationBadgeStyles = {
+    position: 'absolute',
+    top: '-5px',
+    right: '-5px',
+    background: '#e74a3b',
+    color: 'white',
+    borderRadius: '50%',
+    width: '18px',
+    height: '18px',
+    fontSize: '0.7rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'bold'
+  };
+
+  // Inline styles for notification dropdown
+  const notificationDropdownStyles = {
+    position: 'absolute',
+    top: '100%',
+    right: '15px',
+    background: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 5px 25px rgba(0, 0, 0, 0.15)',
+    width: '320px',
+    zIndex: 1001,
+    color: '#333'
+  };
+
+  // Inline styles for menu items
+  const menuItemStyles = {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '12px 15px',
+    color: 'rgba(255, 255, 255, 0.8)',
+    textDecoration: 'none',
+    transition: 'all 0.3s ease',
+    border: 'none',
+    background: 'none',
+    width: '100%',
+    textAlign: 'left',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    fontSize: 'inherit'
+  };
+
+  const activeMenuItemStyles = {
+    ...menuItemStyles,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    color: 'white',
+    borderRight: '3px solid white'
+  };
+
+  const menuBadgeStyles = {
+    background: '#e74a3b',
+    color: 'white',
+    borderRadius: '10px',
+    padding: '2px 8px',
+    fontSize: '0.7rem',
+    marginLeft: 'auto',
+    fontWeight: 'bold'
   };
 
   // Rest of your existing methods (getAuthToken, fetchDashboardData, calculatePendingRequests, etc.)
@@ -431,14 +577,14 @@ const AdminDashboard = ({ onLogout }) => {
     <div className="dashboard-container">
       {/* Mobile Toggle Button */}
       {isMobile && (
-        <button className="mobile-menu-btn" onClick={toggleMobileSidebar}>
+        <button style={mobileMenuBtnStyles} onClick={toggleMobileSidebar}>
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       )}
 
       {/* Overlay for mobile when sidebar is open */}
       {isMobile && sidebarOpen && (
-        <div className="sidebar-overlay" onClick={closeMobileSidebar}></div>
+        <div style={overlayStyles} onClick={closeMobileSidebar}></div>
       )}
 
       {/* Toast notifications */}
@@ -456,11 +602,11 @@ const AdminDashboard = ({ onLogout }) => {
       
       {/* Sidebar */}
       <div
-        className={`sidebar ${getSidebarClass()}`}
+        style={getSidebarStyles()}
         onMouseEnter={handleSidebarEnter}
         onMouseLeave={handleSidebarLeave}
       >
-        <div className="sidebar-header">
+        <div style={sidebarHeaderStyles}>
           <h3>
             {isMobile 
               ? 'Admin Panel' 
@@ -468,15 +614,20 @@ const AdminDashboard = ({ onLogout }) => {
             }
           </h3>
           {/* Notification bell with badge */}
-          <div className="notification-bell" onClick={() => setShowNotifications(!showNotifications)}>
+          <div 
+            style={notificationBellStyles} 
+            onClick={() => setShowNotifications(!showNotifications)}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
             <Bell size={20} />
-            {pendingRequests > 0 && <span className="notification-badge">{pendingRequests}</span>}
+            {pendingRequests > 0 && <span style={notificationBadgeStyles}>{pendingRequests}</span>}
           </div>
         </div>
         
         {/* Notification dropdown */}
         {showNotifications && (
-          <div className="notification-dropdown">
+          <div style={notificationDropdownStyles}>
             <div className="notification-header">
               <h4>Pending Requests</h4>
               <span>{pendingRequests} items need attention</span>
@@ -522,19 +673,25 @@ const AdminDashboard = ({ onLogout }) => {
             <li key={item.path}>
               <Link
                 to={item.path}
-                className={location.pathname === item.path ? 'active' : ''}
+                style={location.pathname === item.path ? activeMenuItemStyles : menuItemStyles}
                 title={!isMobile && sidebarCollapsed ? item.name : ''}
                 onClick={closeMobileSidebar}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                onMouseLeave={(e) => {
+                  if (location.pathname !== item.path) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
               >
                 <i className={item.icon}></i>
                 {(isMobile || !sidebarCollapsed) && <span>{item.name}</span>}
                 
                 {/* Notification badges */}
                 {item.path === '/admin/registered' && stats.pendingUsers > 0 && (
-                  <span className="menu-badge">{stats.pendingUsers}</span>
+                  <span style={menuBadgeStyles}>{stats.pendingUsers}</span>
                 )}
                 {item.path === '/admin/payment-approval' && stats.pendingAllPayments > 0 && (
-                  <span className="menu-badge">{stats.pendingAllPayments}</span>
+                  <span style={menuBadgeStyles}>{stats.pendingAllPayments}</span>
                 )}
               </Link>
             </li>
@@ -544,20 +701,11 @@ const AdminDashboard = ({ onLogout }) => {
           <li>
             <button 
               onClick={handleAdminLogout} 
-              className="logout-btn" 
+              style={menuItemStyles}
               aria-label="Logout"
               title={!isMobile && sidebarCollapsed ? 'Logout' : ''}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#bba9a7ff',
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-                padding: '10px 15px',
-                cursor: 'pointer',
-                fontWeight: 500
-              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <i className="fas fa-sign-out-alt"></i>
               {(isMobile || !sidebarCollapsed) && <span style={{ marginLeft: '10px' }}>Logout</span>}
@@ -567,7 +715,7 @@ const AdminDashboard = ({ onLogout }) => {
       </div>
 
       {/* Main Content */}
-      <div className={`main-content ${getMainContentClass()}`}>
+      <div style={getMainContentStyles()}>
         <Routes>
           <Route path="/" element={
             <div className="dashboard-content">

@@ -28,7 +28,7 @@ const AdminNotifications = () => {
           // Transform API data to match our expected format
           const userData = data.data.map(user => ({
             id: user.id,
-            name: user.name || user.fullName || 'N/A',
+            name: user.name || user.fullName ,
             email: user.email,
             createdAt: user.created_at || user.createdAt,
             active: user.active !== undefined ? user.active : true
