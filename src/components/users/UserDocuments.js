@@ -1,56 +1,108 @@
+
 import React, { useEffect, useState } from "react";
 import { FiCalendar, FiUser, FiPhone, FiCreditCard, FiFileText } from "react-icons/fi";
 import { FaNairaSign } from "react-icons/fa6";
 import Swal from "sweetalert2";
+import ReceiptGenerator from "./ReceiptGenerator";
 
 const UserSubsequentPayments = ({ user }) => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subscriptionStatus, setSubscriptionStatus] = useState('pending');
+  const [approvalNotificationShown, setApprovalNotificationShown] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [subscriptionId, setSubscriptionId] = useState(null);
+  const [dataSource, setDataSource] = useState(null);
 
   useEffect(() => {
     if (!user?.id) return;
 
-    const fetchPayments = async () => {
+    const fetchAllData = async () => {
+      setLoading(true);
       try {
-        const res = await fetch(
-          `https://musabaha-homes.onrender.com/api/user-subsequent-payments/user/${user.id}`
-        );
-        const data = await res.json();
-       
-
-        if (data.success) {
-          setPayments(data.payments);
-
-          // Optional: show a success message
-          Swal.fire({
-            icon: "success",
-            title: "Payments Loaded",
-            text: "Your subsequent payments were fetched successfully.",
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        } else {
-          console.error("Failed to fetch payments:", data.error);
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "Failed to fetch your payments.",
-          });
+        const source = await determineDataSource();
+        if (source === "userstable" && !subscriptionId) {
+          console.log("⏳ Waiting for subscriptionId...");
+          return;
         }
+        await fetchPayments(source);
       } catch (err) {
-        console.error("Error fetching payments:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "An error occurred while fetching payments.",
-        });
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchPayments();
+    fetchAllData();
   }, [user]);
+
+  useEffect(() => {
+    if (dataSource === "userstable" && subscriptionId) {
+      fetchPayments("userstable");
+    }
+  }, [subscriptionId]);
+
+  const determineDataSource = async () => {
+    if (!user?.email) return 'userstable';
+    try {
+      const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
+      const result = await response.json();
+      console.log("Subscription data for source determination:", result);
+
+      if (result.success && result.data) {
+        const subscription = Array.isArray(result.data) ? result.data[0] : result.data;
+        if (subscription) {
+          const newStatus = subscription.status || 'pending';
+          const source = subscription.source === 'subscriptions' ? 'subscriptions' : 'userstable';
+          setSubscriptionStatus(newStatus);
+          setDataSource(source);
+          setSubscriptionId(subscription.id);
+          return source;
+        }
+      }
+    } catch (err) {
+      console.error("Error determining data source:", err);
+    }
+    setDataSource('userstable');
+    return 'userstable';
+  };
+
+  const fetchPayments = async (source) => {
+    try {
+      let url;
+      console.log("Fetching payments with source:", source, "for user:", user.id);
+
+      if (source === 'subscriptions') {
+        url = `https://musabaha-homes.onrender.com/api/user-subsequent-payments/user/${user.id}`;
+      } else {
+        url = `https://musabaha-homes.onrender.com/api/user-payment-requests/user/${subscriptionId}`;
+      }
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      console.log("✅ Fetch URL:", url);
+      console.log("✅ Returned Data:", data);
+
+      if (data.success) {
+        const paymentData = data.payments || data.requests || [];
+        setPayments(paymentData);
+      } else {
+        console.error("API returned success: false", data);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: data.message || "Failed to fetch your payment data.",
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching payments:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while fetching payment data.",
+      });
+    }
+  };
 
   const formatCurrency = (amount) => {
     if (!amount) return "₦0";
@@ -66,6 +118,15 @@ const UserSubsequentPayments = ({ user }) => {
     });
   };
 
+  // Helper functions
+  const getPaymentStatus = (payment) => payment.status || 'pending';
+  const getPaymentAmount = (payment) => payment.amount;
+  const getPaymentMethod = (payment) => payment.payment_method || "N/A";
+  const getUserName = (payment) => payment.user_name || "N/A";
+  const getUserContact = (payment) => payment.user_contact || "N/A";
+  const getNote = (payment) => payment.note || payment.notes || "-";
+  const getDate = (payment) => payment.created_at || payment.transaction_date;
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -77,53 +138,64 @@ const UserSubsequentPayments = ({ user }) => {
 
   return (
     <div className="payments-container">
+      {/* Subscription Status Banner */}
+      <div className={`subscription-banner status-${subscriptionStatus}`}>
+        <div className="banner-content">
+          <div className="banner-text">
+            <h3>Plot Application Status</h3>
+            <p>
+              {subscriptionStatus === 'approved' && 'Your plot application has been approved. You can proceed with payments.'}
+              {subscriptionStatus === 'pending' && 'Your plot application is under review.'}
+              {subscriptionStatus === 'rejected' && 'Your plot application was not approved. Please contact support.'}
+              {!['approved', 'pending', 'rejected'].includes(subscriptionStatus) && `Status: ${subscriptionStatus}`}
+            </p>
+          </div>
+          <div className="status-indicator">
+            <span className={`status-badge ${subscriptionStatus}`}>
+              {subscriptionStatus}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="header-section">
         <h2>
           <FaNairaSign className="header-icon" />
-          Subsequent Payments
+          {dataSource === 'subscriptions' ? 'Subsequent Payments' : 'Payment Requests'}
         </h2>
         <div className="summary-badge">
-          Total: {payments.length} payment{payments.length !== 1 ? 's' : ''}
+          Total: {payments.length} {dataSource === 'subscriptions' ? 'payment' : 'request'}{payments.length !== 1 ? 's' : ''}
         </div>
       </div>
 
       {payments.length === 0 ? (
         <div className="empty-state">
           <FiFileText size={48} className="empty-icon" />
-          <h3>No Subsequent Payments</h3>
-          <p>You haven't made any additional payments yet.</p>
+          <h3>No {dataSource === 'subscriptions' ? 'Subsequent Payments' : 'Payment Requests'}</h3>
+          <p>
+            {dataSource === 'subscriptions' 
+              ? "You haven't made any additional payments yet."
+              : "You haven't made any payment requests yet."
+            }
+          </p>
         </div>
       ) : (
         <>
-          {/* Desktop Table - Hidden on small screens */}
+          {/* Desktop Table with Receipt Column */}
           <div className="desktop-view">
             <div className="table-wrapper">
               <table className="payments-table">
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>
-                      <FiUser className="th-icon" />
-                      Name
-                    </th>
-                    <th>
-                      <FiPhone className="th-icon" />
-                      Contact
-                    </th>
-                    <th>
-                      <FaNairaSign className="th-icon" />
-                      Amount
-                    </th>
-                    <th>
-                      <FiCreditCard className="th-icon" />
-                      Method
-                    </th>
+                    <th><FiUser className="th-icon" />Name</th>
+                    <th><FiPhone className="th-icon" />Contact</th>
+                    <th><FaNairaSign className="th-icon" />Amount</th>
+                    <th><FiCreditCard className="th-icon" />Method</th>
                     <th>Note</th>
-                    <th>
-                      <FiCalendar className="th-icon" />
-                      Date
-                    </th>
+                    <th><FiCalendar className="th-icon" />Date</th>
                     <th>Status</th>
+                    <th>Receipt</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -133,40 +205,46 @@ const UserSubsequentPayments = ({ user }) => {
                       <td className="user-name">
                         <div className="name-cell">
                           <FiUser size={14} />
-                          {p.user_name || "N/A"}
+                          {getUserName(p)}
                         </div>
                       </td>
                       <td className="user-contact">
                         <div className="contact-cell">
                           <FiPhone size={14} />
-                          {p.user_contact || "N/A"}
+                          {getUserContact(p)}
                         </div>
                       </td>
                       <td className="amount">
                         <span className="amount-value">
-                          {formatCurrency(p.amount)}
+                          {formatCurrency(getPaymentAmount(p))}
                         </span>
                       </td>
                       <td className="method">
                         <span className="method-badge">
-                          {p.payment_method || "N/A"}
+                          {getPaymentMethod(p)}
                         </span>
                       </td>
                       <td className="note">
-                        <span className="note-text" title={p.note || p.notes || "-"}>
-                          {p.note || p.notes || "-"}
+                        <span className="note-text" title={getNote(p)}>
+                          {getNote(p)}
                         </span>
                       </td>
                       <td className="date">
                         <div className="date-cell">
                           <FiCalendar size={14} />
-                          {formatDate(p.created_at)}
+                          {formatDate(getDate(p))}
                         </div>
                       </td>
                       <td className="status">
-                        <span className={`status-badge ${p.status || 'pending'}`}>
-                          {p.status || "pending"}
+                        <span className={`status-badge ${getPaymentStatus(p)}`}>
+                          {getPaymentStatus(p)}
                         </span>
+                      </td>
+                      <td className="receipt-action">
+                        <ReceiptGenerator 
+                          payment={p} 
+                          paymentItem={p} 
+                        />
                       </td>
                     </tr>
                   ))}
@@ -175,7 +253,7 @@ const UserSubsequentPayments = ({ user }) => {
             </div>
           </div>
 
-          {/* Mobile Cards - Show on small screens */}
+          {/* Mobile Cards with Receipt */}
           <div className="mobile-view">
             <div className="payments-cards">
               {payments.map((p, idx) => (
@@ -183,13 +261,13 @@ const UserSubsequentPayments = ({ user }) => {
                   <div className="card-header">
                     <div className="payment-meta">
                       <span className="serial">#{idx + 1}</span>
-                      <span className={`status-badge ${p.status || 'pending'}`}>
-                        {p.status || "pending"}
+                      <span className={`status-badge ${getPaymentStatus(p)}`}>
+                        {getPaymentStatus(p)}
                       </span>
                     </div>
                     <div className="amount-display">
                       <FaNairaSign className="naira-icon" />
-                      {Number(p.amount).toLocaleString()}
+                      {Number(getPaymentAmount(p)).toLocaleString()}
                     </div>
                   </div>
 
@@ -199,7 +277,7 @@ const UserSubsequentPayments = ({ user }) => {
                         <FiUser className="info-icon" />
                         <div className="info-content">
                           <span className="label">Name</span>
-                          <span className="value">{p.user_name || "N/A"}</span>
+                          <span className="value">{getUserName(p)}</span>
                         </div>
                       </div>
                       
@@ -207,7 +285,7 @@ const UserSubsequentPayments = ({ user }) => {
                         <FiPhone className="info-icon" />
                         <div className="info-content">
                           <span className="label">Contact</span>
-                          <span className="value">{p.user_contact || "N/A"}</span>
+                          <span className="value">{getUserContact(p)}</span>
                         </div>
                       </div>
 
@@ -216,7 +294,7 @@ const UserSubsequentPayments = ({ user }) => {
                         <div className="info-content">
                           <span className="label">Method</span>
                           <span className="value method-badge">
-                            {p.payment_method || "N/A"}
+                            {getPaymentMethod(p)}
                           </span>
                         </div>
                       </div>
@@ -225,21 +303,32 @@ const UserSubsequentPayments = ({ user }) => {
                         <FiCalendar className="info-icon" />
                         <div className="info-content">
                           <span className="label">Date</span>
-                          <span className="value">{formatDate(p.created_at)}</span>
+                          <span className="value">{formatDate(getDate(p))}</span>
                         </div>
                       </div>
 
-                      {(p.note || p.notes) && (
+                      {getNote(p) && getNote(p) !== "-" && (
                         <div className="info-item full-width">
                           <FiFileText className="info-icon" />
                           <div className="info-content">
                             <span className="label">Note</span>
                             <span className="value note-text">
-                              {p.note || p.notes}
+                              {getNote(p)}
                             </span>
                           </div>
                         </div>
                       )}
+
+                      <div className="info-item full-width">
+                        <FiFileText className="info-icon" />
+                        <div className="info-content">
+                          <span className="label">Receipt</span>
+                          <ReceiptGenerator 
+                            payment={p} 
+                            paymentItem={p} 
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -249,11 +338,79 @@ const UserSubsequentPayments = ({ user }) => {
         </>
       )}
 
-      <style jsx>{`
+        <style jsx>{`
         .payments-container {
           padding: 16px;
           max-width: 100%;
           min-height: 400px;
+        }
+
+        /* Subscription Status Banner */
+        .subscription-banner {
+          margin-bottom: 20px;
+          border-radius: 12px;
+          padding: 16px;
+          border-left: 4px solid;
+        }
+
+        .subscription-banner.status-approved {
+          background: #d1fae5;
+          border-left-color: #059669;
+        }
+
+        .subscription-banner.status-pending {
+          background: #fef3c7;
+          border-left-color: #d97706;
+        }
+
+        .subscription-banner.status-rejected {
+          background: #fee2e2;
+          border-left-color: #dc2626;
+        }
+
+        .banner-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+
+        .banner-text h3 {
+          margin: 0 0 4px 0;
+          font-size: 1rem;
+          font-weight: 600;
+          color: #374151;
+        }
+
+        .banner-text p {
+          margin: 0;
+          font-size: 0.9rem;
+          color: #6b7280;
+        }
+
+        .status-indicator .status-badge {
+          padding: 6px 12px;
+          border-radius: 16px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .status-indicator .status-badge.approved {
+          background: #059669;
+          color: white;
+        }
+
+        .status-indicator .status-badge.pending {
+          background: #d97706;
+          color: white;
+        }
+
+        .status-indicator .status-badge.rejected {
+          background: #dc2626;
+          color: white;
         }
 
         .loading-container {
@@ -336,6 +493,22 @@ const UserSubsequentPayments = ({ user }) => {
           margin: 0;
           color: #9ca3af;
           font-size: 0.95rem;
+        }
+
+        .make-payment-btn {
+          margin-top: 16px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.2s;
+        }
+
+        .make-payment-btn:hover {
+          transform: translateY(-2px);
         }
 
         /* Desktop Table Styles */
@@ -608,6 +781,12 @@ const UserSubsequentPayments = ({ user }) => {
           .header-section h2 {
             font-size: 1.3rem;
           }
+
+          .banner-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
         }
 
         @media (max-width: 480px) {
@@ -687,7 +866,45 @@ const UserSubsequentPayments = ({ user }) => {
             font-size: 0.75rem;
           }
         }
-      `}</style>
+           .receipt-action {
+          text-align: center;
+        }
+        
+        .receipt-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 0.375rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .receipt-btn.approved {
+          background: #10b981;
+          color: white;
+        }
+        
+        .receipt-btn.approved:hover:not(.disabled) {
+          background: #059669;
+          transform: translateY(-1px);
+        }
+        
+        .receipt-btn.not-approved {
+          background: #9ca3af;
+          color: white;
+          cursor: not-allowed;
+        }
+        
+        .receipt-btn.disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      `}</style>  
+     
     </div>
   );
 };

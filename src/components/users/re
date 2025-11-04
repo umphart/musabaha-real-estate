@@ -1,0 +1,195 @@
+import React from "react";
+import { FiDownload, FiFileText } from "react-icons/fi";
+import { jsPDF } from "jspdf";
+import Swal from "sweetalert2";
+
+const ReceiptGenerator = ({ payment, paymentItem, disabled = false }) => {
+  const convertAmountToWords = (num) => {
+    const a = [
+      "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+      "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+      "Seventeen", "Eighteen", "Nineteen"
+    ];
+    const b = [
+      "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
+    ];
+
+    const inWords = (n) => {
+      if (n < 20) return a[n];
+      if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? " " + a[n % 10] : "");
+      if (n < 1000) return a[Math.floor(n / 100)] + " Hundred " + inWords(n % 100);
+      if (n < 1000000) return inWords(Math.floor(n / 1000)) + " Thousand " + inWords(n % 1000);
+      if (n < 1000000000) return inWords(Math.floor(n / 1000000)) + " Million " + inWords(n % 1000000);
+      return n;
+    };
+
+    return inWords(Number(num)) + " Naira Only";
+  };
+
+  const loadImageAsBase64 = async (path) => {
+    try {
+      const res = await fetch(path);
+      const blob = await res.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error("Error loading image:", error);
+      return null;
+    }
+  };
+
+  const generateReceipt = async () => {
+    if (!paymentItem || paymentItem.status !== "approved") {
+      Swal.fire({
+        icon: "warning",
+        title: "Not Approved",
+        text: "Cannot generate receipt for unapproved payments",
+      });
+      return;
+    }
+
+    try {
+      const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: [148.5, 210],
+      });
+
+      // Load images
+      const [logo, bg] = await Promise.all([
+        loadImageAsBase64("/images/MHL.jpg"),
+        loadImageAsBase64("/images/bg.jpg")
+      ]);
+
+      // Background
+      if (bg) {
+        doc.addImage(bg, "JPEG", 0, 20, 210, 148.5);
+      }
+
+      // Logo
+      if (logo) {
+        doc.addImage(logo, "JPEG", 10, 17, 25, 25);
+      }
+
+      // Header
+      doc.setFontSize(12).setFont(undefined, "bold");
+      doc.text("MUSABAHA HOMES LTD.", 40, 18);
+
+      doc.setFontSize(9).setFont(undefined, "normal");
+      doc.text("RC NO.: 8176032", 40, 24);
+      doc.text("No. 015, City Plaza Along Ring Road Western Bypass", 40, 30);
+      doc.text("Along Yankaba Road, Kano State", 40, 34);
+      doc.text("TEL: +2349064220705, +2349039108853, +2347038192719", 40, 40);
+      doc.text("Email: musabahohomesltd@gmail.com", 40, 44);
+
+      // Title
+      doc.setFontSize(30).setFont(undefined, "bold");
+      doc.text("CASH RECEIPT", 105, 60, { align: "center" });
+
+      // Receipt details
+      doc.setFontSize(9).setFont(undefined, "normal");
+      doc.text("No.:", 10, 70);
+      doc.line(20, 70, 70, 70);
+      doc.text(`${paymentItem.id}`, 22, 69);
+
+      doc.text("Date & Time:", 130, 70);
+      doc.line(160, 70, 200, 70);
+      const paymentDate = paymentItem.created_at
+        ? new Date(paymentItem.created_at)
+        : new Date();
+
+      doc.text(paymentDate.toLocaleString("en-NG"), 162, 69);
+
+      // Received from
+      doc.setFont(undefined, "bold");
+      doc.text("Received from:", 10, 85);
+      doc.line(45, 85, 200, 85);
+      doc.setFont(undefined, "normal");
+      doc.text(payment?.name || paymentItem?.user_name || "N/A", 47, 84);
+
+      // Amount in words
+      const amountInWords = convertAmountToWords(paymentItem.amount);
+      const splitWords = doc.splitTextToSize(amountInWords, 150);
+
+      doc.setFont(undefined, "bold");
+      doc.text("The Sum of:", 10, 100);
+      doc.line(40, 100, 200, 100);
+      doc.setFont(undefined, "normal");
+      doc.text(splitWords, 42, 99);
+
+      // Amount in figures
+      doc.setFont(undefined, "bold");
+      doc.text("Naira:", 120, 115);
+      doc.line(140, 115, 200, 115);
+      doc.setFont(undefined, "normal");
+      doc.text(`₦${Number(paymentItem.amount).toLocaleString()}`, 142, 114);
+
+      // Payment For
+      doc.setFont(undefined, "bold");
+      doc.text("Being payment for:", 10, 125);
+      doc.line(60, 125, 200, 125);
+      doc.setFont(undefined, "normal");
+      doc.text(
+        `Plot(s): ${payment?.number_of_plots || "N/A"} - ${paymentItem.note || paymentItem.notes || "Payment on account"}`,
+        62,
+        124
+      );
+
+      // Recorded by
+      doc.setFont(undefined, "bold");
+      doc.text("Approved by:", 10, 140);
+      doc.line(38, 140, 100, 140);
+      doc.setFont(undefined, "normal");
+      doc.text(paymentItem.admin || paymentItem.recorded_by || "Admin", 40, 139);
+
+      // Signature
+      doc.setFont(undefined, "bold");
+      doc.text("Signature:", 150, 140);
+      doc.line(170, 140, 200, 140);
+
+      doc.setFontSize(8).setFont(undefined, "italic");
+      doc.text("For MUSABAHA HOMES LTD.", 170, 145);
+
+      // Generate filename
+      const userName = payment?.name || paymentItem?.user_name || "Customer";
+      const fileName = `receipt_${userName.replace(/\s+/g, "_")}_${paymentItem.id}.pdf`;
+
+      // Save file
+      doc.save(fileName);
+
+      Swal.fire({
+        icon: "success",
+        title: "Receipt Generated",
+        text: "Receipt downloaded successfully!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error("Error generating receipt:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to generate receipt. Please try again.",
+      });
+    }
+  };
+
+  const isApproved = paymentItem?.status === "approved";
+
+  return (
+    <button
+      className={`receipt-btn ${isApproved ? 'approved' : 'not-approved'} ${disabled ? 'disabled' : ''}`}
+      onClick={generateReceipt}
+      disabled={disabled || !isApproved}
+      title={isApproved ? "Generate Receipt" : "Payment not approved"}
+    >
+      <FiFileText size={16} />
+      <span>Receipt</span>
+    </button>
+  );
+};
+
+export default ReceiptGenerator;
