@@ -71,14 +71,14 @@ const fetchDashboardData = async () => {
 
   try {
     setLoading(true);
-    const paymentsRes = await fetch(`https://musabaha-homes.onrender.com/api/user-payments/user/${user.id}`);
+    const paymentsRes = await fetch(`https://musabaha-homes-ltd.com.ng/api/user-payments/user/${user.id}`);
     const paymentsData = await paymentsRes.json();
 
-    const subsequentRes = await fetch(`https://musabaha-homes.onrender.com/api/user-subsequent-payments/user/${user.id}`);
+    const subsequentRes = await fetch(`https://musabaha-homes-ltd.com.ng/api/user-subsequent-payments/user/${user.id}`);
     const subsequentData = await subsequentRes.json();
 
     // Fetch subscription data to get payment terms
-    const subscriptionRes = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
+    const subscriptionRes = await fetch(`https://musabaha-homes-ltd.com.ng/api/subscriptions?email=${user.email}`);
     const subscriptionData = await subscriptionRes.json();
 
     let totalDeposited = 0;
@@ -280,9 +280,9 @@ const fetchDashboardData = async () => {
     if (!user?.email) return;
 
     try {
-      const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
+      const response = await fetch(`https://musabaha-homes-ltd.com.ng/api/subscriptions?email=${user.email}`);
       const result = await response.json();
-     
+      console.log("Subscription data:", result);
 
       if (result.success) {
         const subscription = Array.isArray(result.data) ? result.data[0] : result.data;
@@ -2470,14 +2470,14 @@ const DashboardHome = ({ dashboardData, loading, notifications, subscriptionStat
 
   // Safe date formatting function
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) ;
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
   };
 
   // Safe date formatting with time
   const formatDateTime = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString);
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString('en-US', { 
       year: 'numeric', 
@@ -2822,7 +2822,7 @@ const DashboardHome = ({ dashboardData, loading, notifications, subscriptionStat
                     
                     <button 
                       className="whatsapp-btn"
-                      onClick={() => window.open('https://wa.me/2349039108853?text=Hello%20Musabaha%20Homes%20LTD,%20I%20need%20assistance%20with%20my%20plot%20application/payment.', '_blank')}
+                      onClick={() => window.open('https://wa.me/2347038192719?text=Hello%20Musabaha%20Homes%20LTD,%20I%20need%20assistance%20with%20my%20plot%20application/payment.', '_blank')}
                       style={{ marginTop: '16px' }}
                     >
                       <i className="fab fa-whatsapp"></i> Contact Support via WhatsApp

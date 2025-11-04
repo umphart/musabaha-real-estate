@@ -283,7 +283,7 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
     const fetchUserData = async () => {
       try {
         const response = await fetch(
-          `https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`
+          `https://musabaha-homes-ltd.com.ng/api/subscriptions?email=${user.email}`
         );
         const result = await response.json();
         console.log("API Response:", result);

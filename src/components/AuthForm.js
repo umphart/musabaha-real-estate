@@ -11,7 +11,7 @@ const AuthForm = ({ onLogin }) => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  const API_BASE_URL = 'https://musabaha-homes.onrender.com/api';
+  const API_BASE_URL = 'https://musabaha-homes-ltd.com.ng/api';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -108,7 +108,7 @@ const AuthForm = ({ onLogin }) => {
         maxWidth: '400px',
         boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)'
       }}>
-        <h2 style={{ textAlign: 'center' }}>MUSABAHA HOMES LTD.    </h2>
+        <h2 style={{ textAlign: 'center' }}>MUSABAHA HOMES LTD.  </h2>
        
 
         <div className="tabs" style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>

@@ -44,7 +44,7 @@ const UserSubsequentPayments = ({ user }) => {
   const determineDataSource = async () => {
     if (!user?.email) return 'userstable';
     try {
-      const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
+      const response = await fetch(`https://musabaha-homes-ltd.com.ng/api/subscriptions?email=${user.email}`);
       const result = await response.json();
       console.log("Subscription data for source determination:", result);
 
@@ -72,9 +72,9 @@ const UserSubsequentPayments = ({ user }) => {
       console.log("Fetching payments with source:", source, "for user:", user.id);
 
       if (source === 'subscriptions') {
-        url = `https://musabaha-homes.onrender.com/api/user-subsequent-payments/user/${user.id}`;
+        url = `https://musabaha-homes-ltd.com.ng/api/user-subsequent-payments/user/${user.id}`;
       } else {
-        url = `https://musabaha-homes.onrender.com/api/user-payment-requests/user/${subscriptionId}`;
+        url = `https://musabaha-homes-ltd.com.ng/api/user-payment-requests/user/${subscriptionId}`;
       }
 
       const res = await fetch(url);

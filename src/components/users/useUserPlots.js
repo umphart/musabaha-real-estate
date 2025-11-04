@@ -17,7 +17,7 @@ export const useUserPlots = (user) => {
 
   const fetchUserPlots = useCallback(async () => {
     try {
-      const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
+      const response = await fetch(`https://musabaha-homes-ltd.com.ng/api/subscriptions?email=${user.email}`);
       const result = await response.json();
 
       console.log('All plots data:', result);
@@ -42,7 +42,7 @@ export const useUserPlots = (user) => {
         // Fetch payments for all plots
         try {
           const paymentsResponse = await fetch(
-            `https://musabaha-homes.onrender.com/api/user-payments/user/${user.id}`
+            `https://musabaha-homes-ltd.com.ng/api/user-payments/user/${user.id}`
           );
           const paymentsData = await paymentsResponse.json();
           

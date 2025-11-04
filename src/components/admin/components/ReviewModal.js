@@ -25,7 +25,7 @@ const PaymentRequestsPage = () => {
   // Handle approve action
   const handleApprove = async (request) => {
     try {
-      const response = await fetch(`https://musabaha-homes.onrender.com/api/payment-requests/${request.id}/approve`, {
+      const response = await fetch(`https://musabaha-homes-ltd.com.ng/api/payment-requests/${request.id}/approve`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ const PaymentRequestsPage = () => {
   // Handle reject action
   const handleReject = async (request) => {
     try {
-      const response = await fetch(`https://musabaha-homes.onrender.com/api/payment-requests/${request.id}/reject`, {
+      const response = await fetch(`https://musabaha-homes-ltd.com.ng/api/payment-requests/${request.id}/reject`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

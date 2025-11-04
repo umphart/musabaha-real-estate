@@ -2,7 +2,7 @@ import { FiUser, FiCheck, FiEye, FiX, FiClock } from "react-icons/fi";
 import Swal from 'sweetalert2';
 import { contentTableStyles, tableHeaderStyles, tableTitleStyles, tableStyles, thStyles, tdStyles, trStyles } from "../styles/componentStyles";
 
-const API_BASE_URL = 'https://musabaha-homes.onrender.com/api';
+const API_BASE_URL = 'https://musabaha-homes-ltd.com.ng/api';
 
 const PendingRequestsTable = ({ 
   pendingRequests, 
@@ -15,7 +15,7 @@ const PendingRequestsTable = ({
   // Handle approve action - UPDATED to use user_id
   const handleApprove = async (request) => {
     try {
-      const response = await fetch(`https://musabaha-homes.onrender.com/api/approve-payment/payment-requests/${request.id}/approve`, {
+      const response = await fetch(`https://musabaha-homes-ltd.com.ng/api/approve-payment/payment-requests/${request.id}/approve`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ const PendingRequestsTable = ({
   // Handle reject action
   const handleReject = async (request) => {
     try {
-      const response = await fetch(`https://musabaha-homes.onrender.com/api/approve-payment/payment-requests/${request.id}/reject`, {
+      const response = await fetch(`https://musabaha-homes-ltd.com.ng/api/approve-payment/payment-requests/${request.id}/reject`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
