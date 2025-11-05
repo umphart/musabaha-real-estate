@@ -14,6 +14,7 @@ const UserSubsequentPayments = ({ user }) => {
   const [subscriptionId, setSubscriptionId] = useState(null);
   const [dataSource, setDataSource] = useState(null);
 
+  // Fix: Added proper dependencies
   useEffect(() => {
     if (!user?.id) return;
 
@@ -33,18 +34,22 @@ const UserSubsequentPayments = ({ user }) => {
       }
     };
     fetchAllData();
-  }, [user]);
+  }, [user, subscriptionId]); // Added subscriptionId as dependency
 
   useEffect(() => {
     if (dataSource === "userstable" && subscriptionId) {
       fetchPayments("userstable");
     }
-  }, [subscriptionId]);
+  }, [dataSource, subscriptionId]); // Added proper dependencies
 
   const determineDataSource = async () => {
     if (!user?.email) return 'userstable';
     try {
+      // Choose one - don't mix localhost and production
       const response = await fetch(`http://localhost:5000/api/subscriptions?email=${user.email}`);
+      // OR for production:
+      // const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
+      
       const result = await response.json();
       console.log("Subscription data for source determination:", result);
 
@@ -66,21 +71,34 @@ const UserSubsequentPayments = ({ user }) => {
     return 'userstable';
   };
 
+  // Fixed fetchPayments function structure
   const fetchPayments = async (source) => {
     try {
       let url;
       console.log("Fetching payments with source:", source, "for user:", user.id);
 
+      // Use consistent API base URL
+      const baseUrl = "http://localhost:5000/api"; // or "https://musabaha-homes.onrender.com/api"
+      
       if (source === 'subscriptions') {
-        url = `http://localhost:5000/api/user-subsequent-payments/user/${user.id}`;
+        url = `${baseUrl}/user-subsequent-payments/user/${user.id}`;
       } else {
-        url = `http://localhost:5000/api/user-payment-requests/user/${subscriptionId}`;
+        // Fix: Check if subscriptionId exists before using it
+        if (!subscriptionId) {
+          console.error("No subscriptionId available for userstable source");
+          return;
+        }
+        url = `${baseUrl}/user-payment-requests/user/${subscriptionId}`;
       }
 
-      const res = await fetch(url);
-      const data = await res.json();
-
       console.log("✅ Fetch URL:", url);
+      const res = await fetch(url);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const data = await res.json();
       console.log("✅ Returned Data:", data);
 
       if (data.success) {
