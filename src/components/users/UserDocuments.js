@@ -46,7 +46,7 @@ const UserSubsequentPayments = ({ user }) => {
     if (!user?.email) return 'userstable';
     try {
       // Choose one - don't mix localhost and production
-      const response = await fetch(`http://localhost:5000/api/subscriptions?email=${user.email}`);
+      const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
       // OR for production:
       // const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
       
@@ -78,7 +78,7 @@ const UserSubsequentPayments = ({ user }) => {
       console.log("Fetching payments with source:", source, "for user:", user.id);
 
       // Use consistent API base URL
-      const baseUrl = "http://localhost:5000/api"; // or "https://musabaha-homes.onrender.com/api"
+      const baseUrl = "https://musabaha-homes.onrender.com/api"; // or "https://musabaha-homes.onrender.com/api"
       
       if (source === 'subscriptions') {
         url = `${baseUrl}/user-subsequent-payments/user/${user.id}`;
