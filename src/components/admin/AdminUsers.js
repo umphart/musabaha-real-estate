@@ -62,9 +62,9 @@ const AdminUsers = () => {
     try {
       const res = await fetch("http://localhost:5000/api/plots");
       const data = await res.json();
-      console.log(data)
+      console.log('plots',data)
       if (data.success) {
-        setPlots(data.data.filter(plot => plot.status === "Available"));
+        setPlots(data.data.filter(plot => plot.status === "available"));
       }
     } catch (err) {
       console.error("Error fetching plots:", err);
