@@ -102,6 +102,7 @@ const [showPaymentModal, setShowPaymentModal] = useState(false);
     }
 
     try {
+
       const response = await fetch('https://musabaha-homes.onrender.com/api/user-payments', {
         method: 'POST',
         headers: headers,

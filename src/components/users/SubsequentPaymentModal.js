@@ -45,6 +45,7 @@ const handleSubmit = async (e) => {
 
   try {
     const res = await fetch("https://musabaha-homes.onrender.com/api/subsequent-payments", {
+ 
       method: "POST",
       headers,
       body: formData,

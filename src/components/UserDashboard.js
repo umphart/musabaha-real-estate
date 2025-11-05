@@ -71,14 +71,14 @@ const fetchDashboardData = async () => {
 
   try {
     setLoading(true);
-    const paymentsRes = await fetch(`https://musabaha-homes.onrender.com/api/user-payments/user/${user.id}`);
+    const paymentsRes = await fetch(`http://localhost:5000/api/user-payments/user/${user.id}`);
     const paymentsData = await paymentsRes.json();
 
-    const subsequentRes = await fetch(`https://musabaha-homes.onrender.com/api/user-subsequent-payments/user/${user.id}`);
+    const subsequentRes = await fetch(`http://localhost:5000/api/user-subsequent-payments/user/${user.id}`);
     const subsequentData = await subsequentRes.json();
 
     // Fetch subscription data to get payment terms
-    const subscriptionRes = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
+    const subscriptionRes = await fetch(`http://localhost:5000/api/subscriptions?email=${user.email}`);
     const subscriptionData = await subscriptionRes.json();
 
     let totalDeposited = 0;
@@ -280,7 +280,7 @@ const fetchDashboardData = async () => {
     if (!user?.email) return;
 
     try {
-      const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
+      const response = await fetch(`http://localhost:5000/api/subscriptions?email=${user.email}`);
       const result = await response.json();
       console.log("Subscription data:", result);
 

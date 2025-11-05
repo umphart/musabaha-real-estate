@@ -65,12 +65,14 @@ const AdminUsers = () => {
       console.log('plots',data)
       if (data.success) {
         setPlots(data.data.filter(plot => plot.status === "available"));
+      } else {
+        showAlert('error', data.message || 'Failed to fetch plots');
       }
-    } catch (err) {
-      console.error("Error fetching plots:", err);
+    } catch (error) {
+      console.error('Error fetching plots:', error);
+      showAlert('error', 'Failed to fetch plots. Please check your connection.');
     }
   };
-
   useEffect(() => {
     fetchUsers();
     fetchPlots();

@@ -79,7 +79,9 @@ const [formData, setFormData] = useState({
   // Fetch all layout plans from backend
   const fetchAllLayoutPlans = async () => {
     try {
+
       const res = await fetch("https://musabaha-homes.onrender.com/api/layout-pla12345679ll");
+
       const data = await res.json();
       console.log("Layout plans response:", data);
       
@@ -89,7 +91,9 @@ const [formData, setFormData] = useState({
         // Set the first layout as current PDF if available
         if (data.data.length > 0) {
           setSelectedLayout(data.data[0]);
+
           const fullUrl = `https://musabaha-homes.onrender.com${data.data[0].file_url}`;
+
           console.log("Setting current PDF URL:", fullUrl);
           setCurrentPdf(fullUrl);
         }
@@ -102,7 +106,9 @@ const [formData, setFormData] = useState({
   // Fetch plots from backend
 const fetchPlots = async () => {
   try {
+
     const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
+
     const data = await res.json();
     
     // Correct way to access plot IDs
@@ -136,7 +142,9 @@ const fetchPlots = async () => {
   // Handle layout selection
   const handleLayoutSelect = (layout) => {
     setSelectedLayout(layout);
+
     const fullUrl = `https://musabaha-homes.onrender.com${layout.file_url}`;
+  
     console.log("Setting selected layout PDF URL:", fullUrl);
     setCurrentPdf(fullUrl);
     setShowLayoutModal(false);
@@ -170,7 +178,9 @@ const fetchPlots = async () => {
       }
 
       const token = localStorage.getItem("userToken");
+
       const response = await fetch(`https://musabaha-homes.onrender.com/api/layout-plan/download/${layout.id}`, {
+
         method: 'GET',
         headers: token ? { 
           Authorization: `Bearer ${token}`,
@@ -362,7 +372,9 @@ const handleSubmit = async (e) => {
 
     const token = localStorage.getItem("userToken");
 
+
     const response = await fetch("https://musabaha-homes.onrender.com/api/subscriptions", {
+
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: data,
@@ -843,7 +855,9 @@ const handleSubmit = async (e) => {
                 <button 
                   type="button" 
                   className="btn-view-layout"
+
                   onClick={() => handleViewPdf(`https://musabaha-homes.onrender.com${selectedLayout.file_url}`)}
+
                 >
                   <FiEye className="icon" /> View
                 </button>
@@ -1207,7 +1221,9 @@ const handleSubmit = async (e) => {
                       <button 
                         type="button" 
                         className="btn-view-layout"
+
                         onClick={() => handleViewPdf(`https://musabaha-homes.onrender.com${layout.file_url}`)} 
+
                       >
                         <FiEye className="icon" /> View
                       </button>

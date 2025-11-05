@@ -9,6 +9,7 @@ const AdminRegisteredUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalType, setModalType] = useState(null); // "docs" | "details"
 
+
   const API_BASE_URL = "https://musabaha-homes.onrender.com/api";
 
   const getAuthToken = () => localStorage.getItem("adminToken");
@@ -589,6 +590,7 @@ const AdminRegisteredUsers = () => {
                       <span>📸 Passport Photo</span>
                       <a
                         href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.passport_photo}`}
+
                         target="_blank"
                         rel="noopener noreferrer"
                         style={docLinkStyles}
@@ -602,7 +604,9 @@ const AdminRegisteredUsers = () => {
                     <li style={docListItemStyles}>
                       <span>🪪 Identification</span>
                       <a
+
                         href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.identification_file}`}
+
                         target="_blank"
                         rel="noopener noreferrer"
                         style={docLinkStyles}
@@ -616,7 +620,9 @@ const AdminRegisteredUsers = () => {
                     <li style={docListItemStyles}>
                       <span>💡 Utility Bill</span>
                       <a
+
                         href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.utility_bill_file}`}
+
                         target="_blank"
                         rel="noopener noreferrer"
                         style={docLinkStyles}
@@ -631,6 +637,7 @@ const AdminRegisteredUsers = () => {
                       <span>✍️ Signature</span>
                       <a
                         href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.signature_file}`}
+
                         target="_blank"
                         rel="noopener noreferrer"
                         style={docLinkStyles}

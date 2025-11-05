@@ -16,6 +16,7 @@ const UserTable = ({ users, onRefresh, onFetchPlots }) => {
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
 
+
   const handleViewUser = async (user) => {
     try {
       const payments = await fetchUserPayments(user.id);

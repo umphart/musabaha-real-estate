@@ -11,6 +11,7 @@ const AuthForm = ({ onLogin }) => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
+
   const API_BASE_URL = 'https://musabaha-homes.onrender.com/api';
 
   const handleSubmit = async (e) => {

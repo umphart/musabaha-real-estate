@@ -106,6 +106,7 @@ const UserPayments = ({ user }) => {
       }
 
       const res = await fetch("https://musabaha-homes.onrender.com/api/user-subsequent-payments", {
+
         method: "POST",
         body: submitFormData,
       });

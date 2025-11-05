@@ -44,8 +44,9 @@ const UserSubsequentPayments = ({ user }) => {
   const determineDataSource = async () => {
     if (!user?.email) return 'userstable';
     try {
+
       const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
-      const result = await response.json();
+    const result = await response.json();
       console.log("Subscription data for source determination:", result);
 
       if (result.success && result.data) {
@@ -66,43 +67,44 @@ const UserSubsequentPayments = ({ user }) => {
     return 'userstable';
   };
 
-  const fetchPayments = async (source) => {
-    try {
-      let url;
-      console.log("Fetching payments with source:", source, "for user:", user.id);
+ const fetchPayments = async (source) => {
+  try {
+    let url;
+    console.log("Fetching payments with source:", source, "for user:", user.id);
 
-      if (source === 'subscriptions') {
-        url = `https://musabaha-homes.onrender.com/api/user-subsequent-payments/user/${user.id}`;
-      } else {
-        url = `https://musabaha-homes.onrender.com/api/user-payment-requests/user/${subscriptionId}`;
-      }
+    if (source === 'subscriptions') {
+      url = `https://musabaha-homes.onrender.com/api/user-subsequent-payments/user/${user.id}`;
+    } else {
+      url = `https://musabaha-homes.onrender.com/api/user-payment-requests/user/${subscriptionId}`;
+    }  // ✅ CLOSE THIS
 
-      const res = await fetch(url);
-      const data = await res.json();
+    const res = await fetch(url);
+    const data = await res.json();
 
-      console.log("✅ Fetch URL:", url);
-      console.log("✅ Returned Data:", data);
+    console.log("✅ Fetch URL:", url);
+    console.log("✅ Returned Data:", data);
 
-      if (data.success) {
-        const paymentData = data.payments || data.requests || [];
-        setPayments(paymentData);
-      } else {
-        console.error("API returned success: false", data);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: data.message || "Failed to fetch your payment data.",
-        });
-      }
-    } catch (err) {
-      console.error("Error fetching payments:", err);
+    if (data.success) {
+      const paymentData = data.payments || data.requests || [];
+      setPayments(paymentData);
+    } else {
+      console.error("API returned success: false", data);
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "An error occurred while fetching payment data.",
+        text: data.message || "Failed to fetch your payment data.",
       });
     }
-  };
+  } catch (err) {
+    console.error("Error fetching payments:", err);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "An error occurred while fetching payment data.",
+    });
+  }
+};
+
 
   const formatCurrency = (amount) => {
     if (!amount) return "₦0";
