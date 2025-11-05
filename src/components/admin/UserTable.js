@@ -14,7 +14,7 @@ const UserTable = ({ users, onRefresh, onFetchPlots }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [editUser, setEditUser] = useState(null);
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
 
   const handleViewUser = async (user) => {
     try {

@@ -9,7 +9,7 @@ const AdminRegisteredUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalType, setModalType] = useState(null); // "docs" | "details"
 
-  const API_BASE_URL = "http://localhost:5000/api";
+  const API_BASE_URL = "https://musabaha-homes.onrender.com/api";
 
   const getAuthToken = () => localStorage.getItem("adminToken");
 
@@ -588,7 +588,7 @@ const AdminRegisteredUsers = () => {
                     <li style={docListItemStyles}>
                       <span>📸 Passport Photo</span>
                       <a
-                        href={`http://localhost:5000/uploads/${selectedUser.passport_photo}`}
+                        href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.passport_photo}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={docLinkStyles}
@@ -602,7 +602,7 @@ const AdminRegisteredUsers = () => {
                     <li style={docListItemStyles}>
                       <span>🪪 Identification</span>
                       <a
-                        href={`http://localhost:5000/uploads/${selectedUser.identification_file}`}
+                        href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.identification_file}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={docLinkStyles}
@@ -616,7 +616,7 @@ const AdminRegisteredUsers = () => {
                     <li style={docListItemStyles}>
                       <span>💡 Utility Bill</span>
                       <a
-                        href={`http://localhost:5000/uploads/${selectedUser.utility_bill_file}`}
+                        href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.utility_bill_file}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={docLinkStyles}
@@ -630,7 +630,7 @@ const AdminRegisteredUsers = () => {
                     <li style={docListItemStyles}>
                       <span>✍️ Signature</span>
                       <a
-                        href={`http://localhost:5000/uploads/${selectedUser.signature_file}`}
+                        href={`https://musabaha-homes.onrender.com/uploads/${selectedUser.signature_file}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={docLinkStyles}

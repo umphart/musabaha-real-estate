@@ -105,7 +105,7 @@ const UserPayments = ({ user }) => {
         submitFormData.append("receipt", formData.receipt);
       }
 
-      const res = await fetch("http://localhost:5000/api/user-subsequent-payments", {
+      const res = await fetch("https://musabaha-homes.onrender.com/api/user-subsequent-payments", {
         method: "POST",
         body: submitFormData,
       });

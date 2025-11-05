@@ -24,7 +24,7 @@ const AdminUsers = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [plots, setPlots] = useState([]);
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
 
   // Fetch users from API
   const fetchUsers = async () => {
@@ -60,7 +60,7 @@ const AdminUsers = () => {
   // Fetch plots
   const fetchPlots = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/plots");
+      const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
       const data = await res.json();
       console.log('plots',data)
       if (data.success) {

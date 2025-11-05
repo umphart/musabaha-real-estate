@@ -7,7 +7,7 @@ const ImportModal = ({ onClose, onSuccess }) => {
   const [csvFile, setCsvFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];

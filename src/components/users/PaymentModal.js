@@ -102,7 +102,7 @@ const [showPaymentModal, setShowPaymentModal] = useState(false);
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/user-payments', {
+      const response = await fetch('https://musabaha-homes.onrender.com/api/user-payments', {
         method: 'POST',
         headers: headers,
         body: formData

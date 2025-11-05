@@ -3,7 +3,7 @@ import { FiTrash2, FiX } from 'react-icons/fi';
 import { getAuthToken, showAlert } from './adminUtils';
 
 const DeleteModal = ({ user, onClose, onSuccess }) => {
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
 
   const confirmDeleteUser = async () => {
     try {
