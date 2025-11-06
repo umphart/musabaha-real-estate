@@ -288,7 +288,7 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
 
         );
         const result = await response.json();
-        console.log("API Response:", result);
+        //("API Response:", result);
 
         if (result.success && result.data && result.data.length > 0) {
           setUserData(result.data);

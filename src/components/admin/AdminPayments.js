@@ -61,99 +61,81 @@ const AdminPayments = () => {
   };
 
   // Fetch dashboard statistics
-// In your fetchDashboardStats function, update it like this:
-const fetchDashboardStats = async () => {
-  try {
-    const token = getAuthToken();
-    console.log("📊 Fetching dashboard stats from:", `${API_BASE_URL}/admin/dashboard/stats`);
-    
-    const response = await fetch(`${API_BASE_URL}/admin/dashboard/stats`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    console.log("📊 Response status:", response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log("📊 Raw Dashboard Stats Data:", data);
-      console.log("📊 totalRevenue value:", data.totalRevenue);
-      console.log("📊 All keys in data:", Object.keys(data));
-      
-      // Try different possible property names
-      const possibleRevenueKeys = [
-        'totalRevenue', 
-        'total_revenue', 
-        'totalRevenue', 
-        'revenue',
-        'totalAmount',
-        'total_amount'
-      ];
-      
-      let foundRevenue = 0;
-      for (const key of possibleRevenueKeys) {
-        if (data[key] !== undefined) {
-          console.log(`📊 Found revenue in key '${key}':`, data[key]);
-          foundRevenue = data[key];
-          break;
-        }
-      }
-      
-      setStats({
-        totalRevenue: foundRevenue,
-        paymentsCount: data.paymentsCount || data.total_payments || data.payments_count || 0,
-        pendingRequestsCount: data.pendingRequestsCount || data.pending_requests || data.pending_requests_count || 0,
-        completedPaymentsCount: data.completedPaymentsCount || data.completed_payments || data.completed_payments_count || 0
+  const fetchDashboardStats = async () => {
+    try {
+      const token = getAuthToken();
+     
+      const response = await fetch(`${API_BASE_URL}/admin/dashboard/stats`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-    } else {
-      console.error("❌ Failed to fetch dashboard stats, status:", response.status);
-      const errorText = await response.text();
-      console.error("❌ Error response:", errorText);
+
+      if (response.ok) {
+        const data = await response.json();
+      
+        // Try different possible property names
+        const possibleRevenueKeys = [
+          'totalRevenue', 
+          'total_revenue', 
+          'totalRevenue', 
+          'revenue',
+          'totalAmount',
+          'total_amount'
+        ];
+        
+        let foundRevenue = 0;
+        for (const key of possibleRevenueKeys) {
+          if (data[key] !== undefined) {
+            foundRevenue = data[key];
+            break;
+          }
+        }
+        
+        setStats({
+          totalRevenue: foundRevenue,
+          paymentsCount: data.paymentsCount || data.total_payments || data.payments_count || 0,
+          pendingRequestsCount: data.pendingRequestsCount || data.pending_requests || data.pending_requests_count || 0,
+          completedPaymentsCount: data.completedPaymentsCount || data.completed_payments || data.completed_payments_count || 0
+        });
+      } else {
+        console.error("❌ Failed to fetch dashboard stats, status:", response.status);
+        const errorText = await response.text();
+        console.error("❌ Error response:", errorText);
+        calculateStatsFromLocalData();
+      }
+    } catch (error) {
+      console.error("❌ Error fetching dashboard stats:", error);
       calculateStatsFromLocalData();
     }
-  } catch (error) {
-    console.error("❌ Error fetching dashboard stats:", error);
-    calculateStatsFromLocalData();
-  }
-};
-
- // Calculate stats from local data as fallback
-const calculateStatsFromLocalData = () => {
-  console.log("🔄 Calculating stats from local data...");
-  console.log("💳 Total payments:", payments.length);
-  console.log("⏳ Pending requests:", pendingRequests.length);
-  
-  const completedPayments = payments.filter(p => {
-    const status = p.status ? p.status.toLowerCase() : '';
-    return status === "completed" || status === "approved" || status === "success";
-  });
-  
-  const pendingPayments = payments.filter(p => {
-    const status = p.status ? p.status.toLowerCase() : '';
-    return status === "pending";
-  });
-
-  const totalRevenue = completedPayments.reduce((sum, p) => {
-    const amount = parseAmount(p.amount);
-    console.log(`💰 Payment amount: ${p.amount} -> parsed: ${amount}`);
-    return sum + amount;
-  }, 0);
-
-  console.log("💰 Calculated Total Revenue:", totalRevenue);
-  console.log("✅ Completed Payments:", completedPayments.length);
-  console.log("⏳ Pending Payments:", pendingPayments.length);
-
-  const newStats = {
-    totalRevenue: totalRevenue,
-    paymentsCount: payments.length,
-    pendingRequestsCount: pendingRequests.length + pendingPayments.length,
-    completedPaymentsCount: completedPayments.length
   };
 
-  console.log("📊 Final Stats to set:", newStats);
-  setStats(newStats);
-};
+  // Calculate stats from local data as fallback
+  const calculateStatsFromLocalData = () => {
+    const completedPayments = payments.filter(p => {
+      const status = p.status ? p.status.toLowerCase() : '';
+      return status === "completed" || status === "approved" || status === "success";
+    });
+    
+    const pendingPayments = payments.filter(p => {
+      const status = p.status ? p.status.toLowerCase() : '';
+      return status === "pending";
+    });
+
+    const totalRevenue = completedPayments.reduce((sum, p) => {
+      const amount = parseAmount(p.amount);
+      return sum + amount;
+    }, 0);
+
+    const newStats = {
+      totalRevenue: totalRevenue,
+      paymentsCount: payments.length,
+      pendingRequestsCount: pendingRequests.length + pendingPayments.length,
+      completedPaymentsCount: completedPayments.length
+    };
+
+    setStats(newStats);
+  };
 
   // Fetch payment requests
   const fetchPaymentRequests = async () => {
@@ -167,7 +149,6 @@ const calculateStatsFromLocalData = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("🔄 Fetched Payment Requests:", data);
         
         // Handle different response structures
         const requests = data.requests || data.data || data || [];
@@ -200,7 +181,6 @@ const calculateStatsFromLocalData = () => {
       if (!response.ok) throw new Error("Failed to fetch users");
       
       const data = await response.json();
-      console.log("👥 Users Data:", data);
       
       if (data.success || Array.isArray(data) || data.data) {
         const usersData = data.data || data;
@@ -225,7 +205,6 @@ const calculateStatsFromLocalData = () => {
         });
         
         setPayments(allPayments);
-        console.log("💳 Extracted Payments:", allPayments);
       } else {
         console.error("Error in response format:", data.message || "Fetch error");
       }
@@ -233,6 +212,26 @@ const calculateStatsFromLocalData = () => {
       console.error("Fetch error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Add this function to fetch users specifically for the PendingRequestsTable
+  const fetchUsers = async () => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/admin/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const usersData = data.data || data;
+        setUsers(Array.isArray(usersData) ? usersData : []);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
     }
   };
 
@@ -271,12 +270,8 @@ const calculateStatsFromLocalData = () => {
         },
       });
 
-      console.log(`🔄 ${action} request sent to: ${API_BASE_URL}/subsequent-payments/payment-requests/${requestId}/${action}`);
-      console.log('Response status:', response.status);
-
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Success response:', result);
         alert(`Payment ${action}ed successfully!`);
         
         // Refresh all data
@@ -460,8 +455,8 @@ const calculateStatsFromLocalData = () => {
           setSelectedRequest={setSelectedRequest}
           setShowModal={setShowModal}
           setPendingRequests={setPendingRequests}
-          handlePaymentAction={handlePaymentAction}
-          actionLoading={actionLoading}
+          fetchUsers={fetchUsers} // Pass the fetchUsers function
+          fetchPendingRequests={fetchPaymentRequests} // Pass the fetchPaymentRequests function
         />
       )}
 

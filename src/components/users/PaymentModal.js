@@ -177,7 +177,7 @@ const [showPaymentModal, setShowPaymentModal] = useState(false);
       let result;
 
       // Only subscription payments are processed
-      console.log('Creating subscription payment for subscription:', plot.id);
+      //('Creating subscription payment for subscription:', plot.id);
       result = await createSubscriptionPayment(paymentData);
       
       if (result.success) {

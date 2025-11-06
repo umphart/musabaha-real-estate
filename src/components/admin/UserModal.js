@@ -2,32 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { 
   FiUser, FiX, FiUserPlus, FiPhone, FiMapPin, FiCalendar, 
   FiDatabase, FiDollarSign, FiPieChart, FiCheckCircle, FiCircle,
-  FiEdit, FiMail
+  FiEdit, FiMail, FiChevronDown, FiChevronUp
 } from 'react-icons/fi';
 import { getAuthToken, showAlert, formatCurrency, calculateTotalPrice } from './adminUtils';
 
 const UserModal = ({ type, user, plots, onClose, onSuccess }) => {
- const [formData, setFormData] = useState({
-  name: '',
-  email: '',
-  contact: '',
-  plot_taken: '',
-  date_taken: '',
-  initial_deposit: '',
-  price_per_plot: '',
-  payment_schedule: 'Monthly',
-  total_balance: '',
-  number_of_plots: 1,
-  location: '',     // ✅ ADD THIS
-  plot_size: ''     // ✅ ADD THIS
-});
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    contact: '',
+    plot_taken: '',
+    date_taken: '',
+    initial_deposit: '',
+    price_per_plot: '',
+    payment_schedule: 'Monthly',
+    total_balance: '',
+    number_of_plots: 1,
+    location: '',     
+    plot_size: ''    
+  });
 
   const [selectedPlots, setSelectedPlots] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [showAllPlots, setShowAllPlots] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
-
 
   useEffect(() => {
     if (type === 'edit' && user) {
@@ -45,39 +44,45 @@ const UserModal = ({ type, user, plots, onClose, onSuccess }) => {
       });
     }
   }, [type, user]);
-const handlePlotSelection = (plot) => {
-  setSelectedPlots(prevSelected => {
-    const isAlreadySelected = prevSelected.some(p => p.id === plot.id);
-    
-    const newSelection = isAlreadySelected
-      ? prevSelected.filter(p => p.id !== plot.id)
-      : [...prevSelected, plot];
 
-    console.log("✅ Plot Clicked:", plot);
-    console.log("✅ Updated Selected Plots:", newSelection);
+  const handlePlotSelection = (plot) => {
+    setSelectedPlots(prevSelected => {
+      const isAlreadySelected = prevSelected.some(p => p.id === plot.id);
+      
+      const newSelection = isAlreadySelected
+        ? prevSelected.filter(p => p.id !== plot.id)
+        : [...prevSelected, plot];
 
-    return newSelection;
-  });
-};
+      //("✅ Plot Clicked:", plot);
+      //("✅ Updated Selected Plots:", newSelection);
 
-useEffect(() => {
-  if (selectedPlots.length > 0 && type === 'create') {
-    const plotNumbers = selectedPlots.map(p => p.number).join(', ');
-    const plotPrices = selectedPlots.map(p => p.price).join(', ');
-    const totalPrice = selectedPlots.reduce((sum, p) => sum + parseFloat(p.price || 0), 0);
+      return newSelection;
+    });
+  };
 
-    setFormData(prev => ({
-      ...prev,
-      plot_taken: plotNumbers,
-      price_per_plot: plotPrices,
-      total_balance: (totalPrice - parseFloat(prev.initial_deposit || 0)).toString(),
-      number_of_plots: selectedPlots.length,
-      location: selectedPlots[0].location || "",      // ✅ SAVE LOCATION
-      plot_size: selectedPlots[0].dimension || ""     // ✅ SAVE SIZE
-    }));
-  }
-}, [selectedPlots, type]);
+  const toggleShowAllPlots = () => {
+    setShowAllPlots(prev => !prev);
+  };
 
+  const displayedPlots = showAllPlots ? plots : plots.slice(0, 6);
+
+  useEffect(() => {
+    if (selectedPlots.length > 0 && type === 'create') {
+      const plotNumbers = selectedPlots.map(p => p.number).join(', ');
+      const plotPrices = selectedPlots.map(p => p.price).join(', ');
+      const totalPrice = selectedPlots.reduce((sum, p) => sum + parseFloat(p.price || 0), 0);
+
+      setFormData(prev => ({
+        ...prev,
+        plot_taken: plotNumbers,
+        price_per_plot: plotPrices,
+        total_balance: (totalPrice - parseFloat(prev.initial_deposit || 0)).toString(),
+        number_of_plots: selectedPlots.length,
+        location: selectedPlots[0].location || "",
+        plot_size: selectedPlots[0].dimension || ""
+      }));
+    }
+  }, [selectedPlots, type]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -91,14 +96,12 @@ useEffect(() => {
     e.preventDefault();
     setLoading(true);
 
-    // Validate required fields
     if (!formData.name || !formData.email || !formData.contact || (type === 'create' && selectedPlots.length === 0)) {
       showAlert('error', 'Please fill in all required fields and select at least one plot.');
       setLoading(false);
       return;
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       showAlert('error', 'Please enter a valid email address.');
@@ -116,24 +119,23 @@ useEffect(() => {
 
         const priceList = selectedPlots.map(plot => plot.price).join(', ');
         
-const requestBody = {
-  name: formData.name,
-  email: formData.email,
-  contact: formData.contact,
-  plot_taken: formData.plot_taken,
-  date_taken: formData.date_taken,
-  initial_deposit: formData.initial_deposit,
-  price_per_plot: priceList,
-  payment_schedule: formData.payment_schedule,
-  total_balance: totalBalance.toString(),
-  number_of_plots: selectedPlots.length,
-  total_money_to_pay: totalPlotPrice.toString(),
-  location: formData.location,      // ✅ NEW
-  plot_size: formData.plot_size     // ✅ NEW
-};
+        const requestBody = {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.contact,
+          plot_taken: formData.plot_taken,
+          date_taken: formData.date_taken,
+          initial_deposit: formData.initial_deposit,
+          price_per_plot: priceList,
+          payment_schedule: formData.payment_schedule,
+          total_balance: totalBalance.toString(),
+          number_of_plots: selectedPlots.length,
+          total_money_to_pay: totalPlotPrice.toString(),
+          location: formData.location,
+          plot_size: formData.plot_size
+        };
 
-
-        console.log('Sending request with email:', formData.email); // Debug log
+        //('Sending request with email:', formData.email);
 
         response = await fetch(`${API_BASE_URL}/admin/users`, {
           method: 'POST',
@@ -246,7 +248,7 @@ const requestBody = {
                 
                 <div className="compact-plots-container">
                   <div className="plots-mini-grid">
-                    {plots.slice(0, 6).map(plot => (
+                    {displayedPlots.map(plot => (
                       <div 
                         key={plot.id}
                         className={`plot-mini-card ${selectedPlots.some(p => p.id === plot.id) ? 'selected' : ''}`}
@@ -262,9 +264,23 @@ const requestBody = {
                         )}
                       </div>
                     ))}
+                    
                     {plots.length > 6 && (
-                      <div className="plot-more-indicator">
-                        +{plots.length - 6} more
+                      <div 
+                        className="plot-toggle-indicator"
+                        onClick={toggleShowAllPlots}
+                      >
+                        {showAllPlots ? (
+                          <>
+                            <FiChevronUp size={16} />
+                            Show Less
+                          </>
+                        ) : (
+                          <>
+                            <FiChevronDown size={16} />
+                            +{plots.length - 6} more
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -295,7 +311,6 @@ const requestBody = {
               </div>
             )}
 
-            {/* Rest of your form sections remain the same */}
             <div className="form-section compact-section">
               <div className="form-row compact-row">
                 <div className="form-group compact-group">
@@ -324,214 +339,214 @@ const requestBody = {
               </div>
             </div>
 
-<div style={{ padding: '20px', border: '1px solid #e1e5e9', borderRadius: '8px', marginBottom: '20px' }}>
-  <h4 style={{ margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: '8px', color: '#2c3e50' }}>
-    <FiDollarSign style={{ fontSize: '18px' }} />
-    Financial Details
-  </h4>
-  
-  {type === 'create' ? (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Plot Prices</label>
-        <div style={{ 
-          padding: '10px', 
-          backgroundColor: '#f8f9fa', 
-          border: '1px solid #e1e5e9', 
-          borderRadius: '4px',
-          fontSize: '14px',
-          minHeight: '40px',
-          display: 'flex',
-          alignItems: 'center'
-        }}>
-          {selectedPlots.length > 0 ? selectedPlots.map(plot => formatCurrency(plot.price)).join(', ') : 'No plots selected'}
-        </div>
-      </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Total Price</label>
-        <div style={{ 
-          padding: '10px', 
-          backgroundColor: '#e8f5e8', 
-          border: '1px solid #4caf50', 
-          borderRadius: '4px',
-          fontSize: '16px',
-          fontWeight: 'bold',
-          color: '#2e7d32',
-          minHeight: '40px',
-          display: 'flex',
-          alignItems: 'center'
-        }}>
-          {formatCurrency(calculateTotalPrice(formData.price_per_plot))}
-        </div>
-      </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Initial Deposit *</label>
-        <input
-          type="number"
-          name="initial_deposit"
-          value={formData.initial_deposit}
-          onChange={handleInputChange}
-          placeholder="0"
-          min="0"
-          max={calculateTotalPrice(formData.price_per_plot)}
-          required
-          style={{
-            padding: '10px',
-            border: '1px solid #e1e5e9',
-            borderRadius: '4px',
-            fontSize: '14px',
-            minHeight: '40px'
-          }}
-        />
-      </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Balance</label>
-        <div style={{ 
-          padding: '10px', 
-          backgroundColor: (calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0)) <= 0 ? '#e8f5e8' : '#fff3e0',
-          border: (calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0)) <= 0 ? '1px solid #4caf50' : '1px solid #ff9800',
-          borderRadius: '4px',
-          fontSize: '16px',
-          fontWeight: 'bold',
-          color: (calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0)) <= 0 ? '#2e7d32' : '#e65100',
-          minHeight: '40px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          {formatCurrency(calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0))}
-          {(calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0)) <= 0 && (
-            <span style={{
-              backgroundColor: '#4caf50',
-              color: 'white',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontSize: '12px',
-              fontWeight: '500'
-            }}>Paid</span>
-          )}
-        </div>
-      </div>
-    </div>
-  ) : (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Plot Taken *</label>
-        <input
-          type="text"
-          name="plot_taken"
-          value={formData.plot_taken}
-          onChange={handleInputChange}
-          required
-          style={{
-            padding: '10px',
-            border: '1px solid #e1e5e9',
-            borderRadius: '4px',
-            fontSize: '14px',
-            minHeight: '40px'
-          }}
-        />
-      </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Price per Plot *</label>
-        <input
-          type="text"
-          name="price_per_plot"
-          value={formData.price_per_plot}
-          onChange={handleInputChange}
-          required
-          style={{
-            padding: '10px',
-            border: '1px solid #e1e5e9',
-            borderRadius: '4px',
-            fontSize: '14px',
-            minHeight: '40px'
-          }}
-        />
-      </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Initial Deposit *</label>
-        <input
-          type="number"
-          name="initial_deposit"
-          value={formData.initial_deposit}
-          onChange={handleInputChange}
-          required
-          style={{
-            padding: '10px',
-            border: '1px solid #e1e5e9',
-            borderRadius: '4px',
-            fontSize: '14px',
-            minHeight: '40px'
-          }}
-        />
-      </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Total Balance</label>
-        <input
-          type="number"
-          name="total_balance"
-          value={formData.total_balance}
-          onChange={handleInputChange}
-          style={{
-            padding: '10px',
-            border: '1px solid #e1e5e9',
-            borderRadius: '4px',
-            fontSize: '14px',
-            minHeight: '40px'
-          }}
-        />
-      </div>
-    </div>
-  )}
+            <div style={{ padding: '20px', border: '1px solid #e1e5e9', borderRadius: '8px', marginBottom: '20px' }}>
+              <h4 style={{ margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: '8px', color: '#2c3e50' }}>
+                <FiDollarSign style={{ fontSize: '18px' }} />
+                Financial Details
+              </h4>
+              
+              {type === 'create' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Plot Prices</label>
+                    <div style={{ 
+                      padding: '10px', 
+                      backgroundColor: '#f8f9fa', 
+                      border: '1px solid #e1e5e9', 
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      minHeight: '40px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      {selectedPlots.length > 0 ? selectedPlots.map(plot => formatCurrency(plot.price)).join(', ') : 'No plots selected'}
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Total Price</label>
+                    <div style={{ 
+                      padding: '10px', 
+                      backgroundColor: '#e8f5e8', 
+                      border: '1px solid #4caf50', 
+                      borderRadius: '4px',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      color: '#2e7d32',
+                      minHeight: '40px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      {formatCurrency(calculateTotalPrice(formData.price_per_plot))}
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Initial Deposit *</label>
+                    <input
+                      type="number"
+                      name="initial_deposit"
+                      value={formData.initial_deposit}
+                      onChange={handleInputChange}
+                      placeholder="0"
+                      min="0"
+                      max={calculateTotalPrice(formData.price_per_plot)}
+                      required
+                      style={{
+                        padding: '10px',
+                        border: '1px solid #e1e5e9',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        minHeight: '40px'
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Balance</label>
+                    <div style={{ 
+                      padding: '10px', 
+                      backgroundColor: (calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0)) <= 0 ? '#e8f5e8' : '#fff3e0',
+                      border: (calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0)) <= 0 ? '1px solid #4caf50' : '1px solid #ff9800',
+                      borderRadius: '4px',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      color: (calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0)) <= 0 ? '#2e7d32' : '#e65100',
+                      minHeight: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}>
+                      {formatCurrency(calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0))}
+                      {(calculateTotalPrice(formData.price_per_plot) - parseFloat(formData.initial_deposit || 0)) <= 0 && (
+                        <span style={{
+                          backgroundColor: '#4caf50',
+                          color: 'white',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '500'
+                        }}>Paid</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Plot Taken *</label>
+                    <input
+                      type="text"
+                      name="plot_taken"
+                      value={formData.plot_taken}
+                      onChange={handleInputChange}
+                      required
+                      style={{
+                        padding: '10px',
+                        border: '1px solid #e1e5e9',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        minHeight: '40px'
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Price per Plot *</label>
+                    <input
+                      type="text"
+                      name="price_per_plot"
+                      value={formData.price_per_plot}
+                      onChange={handleInputChange}
+                      required
+                      style={{
+                        padding: '10px',
+                        border: '1px solid #e1e5e9',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        minHeight: '40px'
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Initial Deposit *</label>
+                    <input
+                      type="number"
+                      name="initial_deposit"
+                      value={formData.initial_deposit}
+                      onChange={handleInputChange}
+                      required
+                      style={{
+                        padding: '10px',
+                        border: '1px solid #e1e5e9',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        minHeight: '40px'
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>Total Balance</label>
+                    <input
+                      type="number"
+                      name="total_balance"
+                      value={formData.total_balance}
+                      onChange={handleInputChange}
+                      style={{
+                        padding: '10px',
+                        border: '1px solid #e1e5e9',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        minHeight: '40px'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
 
-  <div style={{ marginTop: '15px' }}>
-    <label style={{ 
-      fontSize: '14px', 
-      fontWeight: '500', 
-      color: '#555',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      marginBottom: '8px'
-    }}>
-      <FiPieChart style={{ fontSize: '16px' }} />
-      Payment Schedule *
-    </label>
-    <select
-      name="payment_schedule"
-      value={formData.payment_schedule}
-      onChange={handleInputChange}
-      required
-      style={{
-        width: '100%',
-        padding: '10px',
-        border: '1px solid #e1e5e9',
-        borderRadius: '4px',
-        fontSize: '14px',
-        minHeight: '40px',
-        backgroundColor: 'white'
-      }}
-    >
-      <option value="">Select Payment Terms</option>
-      <option value="3 Months">3 Months</option>
-      <option value="12 Months">12 Months</option>
-      <option value="18 Months">18 Months</option>
-      <option value="24 Months">24 Months</option>
-      <option value="30 Months">30 Months</option>
-      <option value="Monthly">Monthly</option>
-      <option value="Quarterly">Quarterly</option>
-      <option value="Bi-Annual">Bi-Annual</option>
-      <option value="Annual">Annual</option>
-    </select>
-  </div>
-</div>
+              <div style={{ marginTop: '15px' }}>
+                <label style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '500', 
+                  color: '#555',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '8px'
+                }}>
+                  <FiPieChart style={{ fontSize: '16px' }} />
+                  Payment Schedule *
+                </label>
+                <select
+                  name="payment_schedule"
+                  value={formData.payment_schedule}
+                  onChange={handleInputChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #e1e5e9',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    minHeight: '40px',
+                    backgroundColor: 'white'
+                  }}
+                >
+                  <option value="">Select Payment Terms</option>
+                  <option value="3 Months">3 Months</option>
+                  <option value="12 Months">12 Months</option>
+                  <option value="18 Months">18 Months</option>
+                  <option value="24 Months">24 Months</option>
+                  <option value="30 Months">30 Months</option>
+                  <option value="Monthly">Monthly</option>
+                  <option value="Quarterly">Quarterly</option>
+                  <option value="Bi-Annual">Bi-Annual</option>
+                  <option value="Annual">Annual</option>
+                </select>
+              </div>
+            </div>
 
             <div className="modal-footer compact-footer">
               <button 

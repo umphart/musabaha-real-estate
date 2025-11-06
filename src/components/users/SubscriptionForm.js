@@ -83,7 +83,7 @@ const [formData, setFormData] = useState({
       const res = await fetch("https://musabaha-homes.onrender.com/api/layout-pla12345679ll");
 
       const data = await res.json();
-      console.log("Layout plans response:", data);
+      //("Layout plans response:", data);
       
       if (data.success) {
         setAllLayoutPlans(data.data);
@@ -94,7 +94,7 @@ const [formData, setFormData] = useState({
 
           const fullUrl = `https://musabaha-homes.onrender.com${data.data[0].file_url}`;
 
-          console.log("Setting current PDF URL:", fullUrl);
+          //("Setting current PDF URL:", fullUrl);
           setCurrentPdf(fullUrl);
         }
       }
@@ -110,14 +110,8 @@ const fetchPlots = async () => {
     const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
 
     const data = await res.json();
-    
-    // Correct way to access plot IDs
-    console.log("Plots response:", data);
-    console.log("First plot ID:", data.data?.[0]?.id);
-    console.log("All plot IDs:", data.data?.map(plot => plot.id));
-    
-    if (data.success) {
-      setPlots(data.data.filter(plot => plot.status === "Available"));
+        if (data.success) {
+      setPlots(data.data.filter(plot => plot.status === "Available" || plot.status === "available"));
     }
   } catch (err) {
     console.error("Error fetching plots:", err);
@@ -145,13 +139,13 @@ const fetchPlots = async () => {
 
     const fullUrl = `https://musabaha-homes.onrender.com${layout.file_url}`;
   
-    console.log("Setting selected layout PDF URL:", fullUrl);
+    //("Setting selected layout PDF URL:", fullUrl);
     setCurrentPdf(fullUrl);
     setShowLayoutModal(false);
   };
 
   const handleViewPdf = (fileUrl) => {
-    console.log("Viewing PDF:", fileUrl);
+    //("Viewing PDF:", fileUrl);
     setCurrentPdf(fileUrl);
     setShowPdfModal(true);
     setPageNumber(1);
@@ -170,7 +164,7 @@ const fetchPlots = async () => {
   // Download layout plan
   const handleDownloadLayout = async (layout) => {
     try {
-      console.log("Downloading layout:", layout);
+      //("Downloading layout:", layout);
       
       if (!layout || !layout.id) {
         alert('Invalid layout plan data');
@@ -221,7 +215,7 @@ const fetchPlots = async () => {
   };
 
 const handlePlotSelection = (plot) => {
-  console.log("Selected plot:", plot);
+  //("Selected plot:", plot);
   
   // Check if plot is already selected
   const isAlreadySelected = formData.selectedPlots.some(p => p.id === plot.id);
@@ -365,9 +359,9 @@ const handleSubmit = async (e) => {
     }
 
     // Log all FormData entries for debugging
-    console.log("All FormData entries:");
+    //("All FormData entries:");
     for (let pair of data.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
+      //(pair[0] + ': ' + pair[1]);
     }
 
     const token = localStorage.getItem("userToken");
@@ -384,7 +378,7 @@ const handleSubmit = async (e) => {
 
     if (result.success) {
       setSubmitSuccess(true);
-      console.log("✅ Subscription created successfully:", result);
+      //("✅ Subscription created successfully:", result);
       
       // ✅ REDIRECT TO USER DASHBOARD AFTER SUCCESS
       setTimeout(() => {

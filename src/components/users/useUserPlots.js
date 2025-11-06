@@ -21,8 +21,9 @@ export const useUserPlots = (user) => {
       const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
 
       const result = await response.json();
+      console.log(result);
 
-      console.log('All plots data:', result);
+      //('All plots data:', result);
 
       if (result.success && result.data && result.data.length > 0) {
         const allPlots = result.data.map(item => ({

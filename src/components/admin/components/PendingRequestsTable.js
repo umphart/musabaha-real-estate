@@ -2,23 +2,22 @@ import { FiUser, FiCheck, FiEye, FiX, FiClock } from "react-icons/fi";
 import Swal from 'sweetalert2';
 import { contentTableStyles, tableHeaderStyles, tableTitleStyles, tableStyles, thStyles, tdStyles, trStyles } from "../styles/componentStyles";
 
-
 const API_BASE_URL = 'https://musabaha-homes.onrender.com/api';
- 
 
 const PendingRequestsTable = ({ 
   pendingRequests, 
   formatCurrency, 
   setSelectedRequest, 
   setShowModal,
-  setPendingRequests
+  setPendingRequests,
+  fetchUsers, // Add this prop to refresh users data
+  fetchPendingRequests // Add this prop to refresh pending requests properly
 }) => {
   
   // Handle approve action - UPDATED to use user_id
   const handleApprove = async (request) => {
     try {
       const response = await fetch(`https://musabaha-homes.onrender.com/api/approve-payment/payment-requests/${request.id}/approve`, {
-
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -27,11 +26,23 @@ const PendingRequestsTable = ({
           user_id: request.user_id // Send user_id in the request body
         })
       });
-      console.log('Approve response status:', request.user_id);
+      
+      console.log('Approve response status:', response.status);
+      
       if (response.ok) {
         const result = await response.json();
-        // Remove from pending requests
-        setPendingRequests(prev => prev.filter(req => req.id !== request.id));
+        
+        // Refresh both users and pending requests
+        if (fetchUsers) {
+          await fetchUsers();
+        }
+        if (fetchPendingRequests) {
+          await fetchPendingRequests();
+        } else {
+          // Fallback: remove from local state
+          setPendingRequests(prev => prev.filter(req => req.id !== request.id));
+        }
+        
         return result;
       } else {
         const errorData = await response.json();
@@ -46,19 +57,29 @@ const PendingRequestsTable = ({
   // Handle reject action
   const handleReject = async (request) => {
     try {
-
       const response = await fetch(`https://musabaha-homes.onrender.com/api/approve-payment/payment-requests/${request.id}/reject`, {
-
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
       });
       
+      console.log('Reject response status:', response.status);
+      
       if (response.ok) {
         const result = await response.json();
-        // Remove from pending requests
-        setPendingRequests(prev => prev.filter(req => req.id !== request.id));
+        
+        // Refresh both users and pending requests
+        if (fetchUsers) {
+          await fetchUsers();
+        }
+        if (fetchPendingRequests) {
+          await fetchPendingRequests();
+        } else {
+          // Fallback: remove from local state
+          setPendingRequests(prev => prev.filter(req => req.id !== request.id));
+        }
+        
         return result;
       } else {
         const errorData = await response.json();

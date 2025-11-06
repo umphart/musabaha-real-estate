@@ -62,9 +62,9 @@ const AdminUsers = () => {
     try {
       const res = await fetch("https://musabaha-homes.onrender.com/api/plots");
       const data = await res.json();
-      console.log('plots',data)
+      //('plots',data)
       if (data.success) {
-        setPlots(data.data.filter(plot => plot.status === "available"));
+        setPlots(data.data.filter(plot => plot.status === "available" || plot.status === "Available"));
       } else {
         showAlert('error', data.message || 'Failed to fetch plots');
       }

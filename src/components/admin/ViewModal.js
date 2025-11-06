@@ -35,7 +35,7 @@ const handleEditPayment = (payment) => {
         admin: payment.admin || payment.recorded_by || ''
     });
     // Log payment ID being edited
-    console.log('Editing Payment ID:', payment.id);
+    //('Editing Payment ID:', payment.id);
 };
 
 // Update Payment Function
@@ -62,7 +62,7 @@ const handleUpdatePayment = async () => {
         });
 
         const data = await response.json();
-        console.log('Update Response:', data); // Log response from update
+        //('Update Response:', data); // Log response from update
 
         if (data.success) {
             setEditingPayment(null);
@@ -103,7 +103,7 @@ const handleDeletePayment = async (paymentId) => {
             });
 
             const data = await response.json();
-            console.log('Delete Response:', data); // Log response from delete
+            //('Delete Response:', data); // Log response from delete
 
             if (data.success) {
                 Swal.fire(
@@ -155,7 +155,7 @@ const handleDeletePayment = async (paymentId) => {
       });
 
       const data = await response.json();
-      console.log(data);
+      //(data);
       if (data.success) {
         setPaymentData({
           amount: '',

@@ -11,6 +11,7 @@ import { fetchPayments, fetchSubsequentPayments } from "./services/paymentServic
 const UserPayments = ({ user }) => {
   const [payments, setPayments] = useState([]);
   const [subsequentPayments, setSubsequentPayments] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
@@ -64,6 +65,33 @@ const UserPayments = ({ user }) => {
     loadSubsequentPayments();
   }, [user]);
 
+  // ✅ Fetch subscriptions
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const loadSubscriptions = async () => {
+      try {
+        const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
+        const result = await response.json();
+        console.log("Subscription data:", result);
+        if (result.success) {
+          setSubscriptions(result.subscriptions || []);
+        } else {
+          console.error("Error fetching subscriptions:", result.error);
+        }
+      } catch (err) {
+        console.error("Error fetching subscriptions:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "An error occurred while fetching subscriptions.",
+        });
+      }
+    };
+
+    loadSubscriptions();
+  }, [user]);
+
   // ✅ Show payment instructions first, then open modal
   const handleAddPaymentClick = async (payment) => {
     setSelectedPayment(payment);
@@ -106,7 +134,6 @@ const UserPayments = ({ user }) => {
       }
 
       const res = await fetch("https://musabaha-homes.onrender.com/api/user-subsequent-payments", {
-
         method: "POST",
         body: submitFormData,
       });
@@ -149,6 +176,23 @@ const UserPayments = ({ user }) => {
   return (
     <div className="payments-container">
       <h2>Payments</h2>
+
+      {/* Subscriptions Section */}
+      {subscriptions.length > 0 && (
+        <div className="subscriptions-section">
+          <h3>Subscriptions</h3>
+          <div className="subscriptions-list">
+            {subscriptions.map((subscription, index) => (
+              <div key={index} className="subscription-item">
+                <p><strong>Plan:</strong> {subscription.plan_name || 'N/A'}</p>
+                <p><strong>Amount:</strong> ₦{(subscription.amount || 0).toLocaleString()}</p>
+                <p><strong>Status:</strong> {subscription.status || 'N/A'}</p>
+                <p><strong>Date:</strong> {new Date(subscription.created_at).toLocaleDateString()}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {payments.length === 0 ? (
         <p className="no-payments">No payments found.</p>
@@ -193,6 +237,41 @@ const UserPayments = ({ user }) => {
           font-weight: 600;
         }
 
+        .subscriptions-section {
+          margin-bottom: 30px;
+          padding: 20px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          border-left: 4px solid #007bff;
+        }
+
+        .subscriptions-section h3 {
+          margin-bottom: 15px;
+          color: #333;
+          font-size: 1.3rem;
+        }
+
+        .subscriptions-list {
+          display: grid;
+          gap: 15px;
+        }
+
+        .subscription-item {
+          padding: 15px;
+          background: white;
+          border-radius: 6px;
+          border: 1px solid #e0e0e0;
+        }
+
+        .subscription-item p {
+          margin: 5px 0;
+          font-size: 0.9rem;
+        }
+
+        .subscription-item strong {
+          color: #555;
+        }
+
         .no-payments {
           text-align: center;
           padding: 40px;
@@ -209,6 +288,14 @@ const UserPayments = ({ user }) => {
           
           .payments-container h2 {
             font-size: 1.3rem;
+          }
+
+          .subscriptions-section {
+            padding: 15px;
+          }
+
+          .subscription-item {
+            padding: 12px;
           }
         }
 

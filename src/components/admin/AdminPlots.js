@@ -41,7 +41,7 @@ const AdminPlots = () => {
 
       .then(res => res.json())
       .then(data => {
-        console.log("Fetched plots:", data);
+        //("Fetched plots:", data);
         if (data.success) setPlots(data.data);
         setLoading(false);
       })
@@ -110,7 +110,7 @@ const AdminPlots = () => {
 
       });
       const data = await res.json();
-      console.log(data)
+      //(data)
       if (data.success) {
         setPlots([...plots, data.data]);
         Swal.fire({

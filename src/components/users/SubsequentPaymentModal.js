@@ -26,10 +26,10 @@ const handleSubmit = async (e) => {
   if (!payment.receiptFile) return Swal.fire("Error!", "Upload receipt", "warning");
 
   // ✅ Log to console
-  console.log("✅ Payment Submitted:");
-  console.log("Payment:", payment);
-  console.log("User:", user);
-  console.log("Plot:", plot);
+  //("✅ Payment Submitted:");
+  //("Payment:", payment);
+  //("User:", user);
+  //("Plot:", plot);
 
   const token = getAuthToken();
   const formData = new FormData();

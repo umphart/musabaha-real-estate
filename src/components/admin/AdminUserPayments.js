@@ -309,7 +309,7 @@ const AdminUserPayments = () => {
   };
 
   const setupWebSocket = () => {
-    console.log("Setting up WebSocket simulation...");
+    //("Setting up WebSocket simulation...");
     setTimeout(() => simulateNewPaymentNotification(), 5000);
   };
 

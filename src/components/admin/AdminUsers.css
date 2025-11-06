@@ -1531,8 +1531,93 @@
   font-size: 14px;
 }
 
+
 .detail-item span {
   font-weight: 500;
   color: #2c3e50;
   font-size: 16px;
 }
+
+
+/* Plot Selection Styles */
+.plots-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.plot-mini-card {
+  position: relative;
+  padding: 12px 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.plot-mini-card:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.plot-mini-card.selected {
+  background-color: #e7f3ff;
+  border-color: #0d6efd;
+}
+
+.plot-mini-number {
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+}
+
+
+.plot-toggle-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6c757d;
+  transition: all 0.2s ease;
+}
+
+.plot-toggle-indicator:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+.selected-plots-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+
+
+.plots-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+}
+
+
