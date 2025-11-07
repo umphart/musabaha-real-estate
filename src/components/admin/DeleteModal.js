@@ -34,7 +34,7 @@ const DeleteModal = ({ user, onClose, onSuccess }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content small" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header danger">
-          <h3><FiTrash2 className="icon" /> Confirm Delete</h3>
+          <h3><FiTrash2 className="icon" /> Confirm Delete...</h3>
           <button className="modal-close" onClick={onClose}>
             <FiX />
           </button>
