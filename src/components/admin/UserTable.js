@@ -84,7 +84,6 @@ const UserTable = ({ users, onRefresh, onFetchPlots }) => {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Contact</th>
-                <th>Plot Taken</th>
                 <th>Date Taken</th>
                 <th>Total Money</th>
                 <th>Deposit</th>
@@ -114,11 +113,7 @@ const UserTable = ({ users, onRefresh, onFetchPlots }) => {
                     </td>
                     <td>{user.email}</td>
                     <td>{user.contact}</td>
-                    <td>
-                      <div className="plot-info">
-                        <span>{user.plot_taken || 'N/A'}</span>
-                      </div>
-                    </td>
+              
                     <td>{formatDateForDisplay(user.date_taken)}</td>
                     <td>{formatCurrency(calculateTotalPrice(user.price_per_plot))}</td>
                     <td>{formatCurrency(user.initial_deposit)}</td>

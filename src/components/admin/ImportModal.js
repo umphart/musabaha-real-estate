@@ -438,15 +438,6 @@ const ImportModal = ({ onClose, onSuccess }) => {
               <li>Date format: YYYY-MM-DD (or MM/DD/YYYY)</li>
               <li>Contact format: 10-11 digits (e.g., 08098822844 or 8098822844)</li>
             </ul>
-            <div className="email-generation-examples">
-              <h5>Email Generation Examples:</h5>
-              <ul>
-                <li><strong>Umar Musa Halliru</strong> → umh1234@musabaha.com</li>
-                <li><strong>Dalhat Faturu Dalhat</strong> → dfd5678@musabaha.com</li>
-                <li><strong>Faisal Umar Farouk</strong> → fuf9012@musabaha.com</li>
-                <li><strong>Aisha</strong> → aish3456@musabaha.com (single name uses first 3 letters)</li>
-              </ul>
-            </div>
           </div>
 
           <div className="file-upload-section">
