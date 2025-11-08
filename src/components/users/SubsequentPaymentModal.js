@@ -26,10 +26,10 @@ const handleSubmit = async (e) => {
   if (!payment.receiptFile) return Swal.fire("Error!", "Upload receipt", "warning");
 
   // ✅ Log to console
-  //("✅ Payment Submitted:");
-  //("Payment:", payment);
-  //("User:", user);
-  //("Plot:", plot);
+  console.log("✅ Payment Submitted:");
+  console.log("Payment:", payment);
+  console.log("User:", user);
+  console.log("Plot:", plot);
 
   const token = getAuthToken();
   const formData = new FormData();
@@ -44,8 +44,7 @@ const handleSubmit = async (e) => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   try {
-    const res = await fetch("https://musabaha-homes.onrender.com/api/subsequent-payments", {
- 
+    const res = await fetch("http://localhost:5000/api/subsequent-payments", {
       method: "POST",
       headers,
       body: formData,

@@ -16,7 +16,6 @@ const UserTable = ({ users, onRefresh, onFetchPlots }) => {
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
 
-
   const handleViewUser = async (user) => {
     try {
       const payments = await fetchUserPayments(user.id);
@@ -62,17 +61,34 @@ const UserTable = ({ users, onRefresh, onFetchPlots }) => {
     }
   };
 
- const formatDateForDisplay = (dateString) => { 
-  if (!dateString) return "N/A";
+  // Enhanced modal handlers to prevent re-render issues
+  const handleViewModalClose = () => {
+    setShowViewModal(false);
+    // Don't clear selectedUser immediately to avoid flickering
+    setTimeout(() => setSelectedUser(null), 300);
+  };
 
-  try {
-    const date = new Date(dateString);
-    return date.toISOString().split("T")[0];
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return "N/A";
-  }
-};
+  const handleViewModalRefresh = () => {
+    onRefresh();
+    // Refresh the selected user data
+    if (selectedUser) {
+      fetchUserPayments(selectedUser.id).then(payments => {
+        setSelectedUser(prev => ({ ...prev, payments }));
+      });
+    }
+  };
+
+  const formatDateForDisplay = (dateString) => { 
+    if (!dateString) return "N/A";
+
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split("T")[0];
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "N/A";
+    }
+  };
 
   return (
     <>
@@ -109,11 +125,9 @@ const UserTable = ({ users, onRefresh, onFetchPlots }) => {
                       <div className="user-qinfo">
                         <span>{user.name}</span>
                       </div>
-                    
                     </td>
                     <td>{user.email}</td>
                     <td>{user.contact}</td>
-              
                     <td>{formatDateForDisplay(user.date_taken)}</td>
                     <td>{formatCurrency(calculateTotalPrice(user.price_per_plot))}</td>
                     <td>{formatCurrency(user.initial_deposit)}</td>
@@ -193,12 +207,23 @@ const UserTable = ({ users, onRefresh, onFetchPlots }) => {
         />
       )}
 
+      {/* Fixed ViewModal with proper overlay and state management */}
       {showViewModal && selectedUser && (
-        <ViewModal
-          user={selectedUser}
-          onClose={() => setShowViewModal(false)}
-          onRefresh={onRefresh}
-        />
+        <div 
+          className="modal-overlay" 
+          onClick={(e) => {
+            // Only close if clicking directly on the overlay
+            if (e.target === e.currentTarget) {
+              handleViewModalClose();
+            }
+          }}
+        >
+          <ViewModal
+            user={selectedUser}
+            onClose={handleViewModalClose}
+            onRefresh={handleViewModalRefresh}
+          />
+        </div>
       )}
 
       {showDeleteModal && selectedUser && (
