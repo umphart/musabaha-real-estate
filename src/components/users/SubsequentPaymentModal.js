@@ -44,7 +44,7 @@ const handleSubmit = async (e) => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   try {
-    const res = await fetch("http://localhost:5000/api/subsequent-payments", {
+    const res = await fetch("https://musabaha-homes.onrender.com/api/subsequent-payments", {
       method: "POST",
       headers,
       body: formData,

@@ -19,7 +19,7 @@ const UserSubsequentPayments = ({ user }) => {
     }
     
     try {
-      const response = await fetch(`http://localhost:5000/api/subscriptions?email=${user.email}`);
+      const response = await fetch(`https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`);
       const result = await response.json();
       //("Subscription data for source determination:", result);
 
@@ -50,7 +50,7 @@ const UserSubsequentPayments = ({ user }) => {
       let url;
       //("Fetching payments with source:", source, "subscriptionId:", currentSubscriptionId);
 
-      const baseUrl = "http://localhost:5000/api";
+      const baseUrl = "https://musabaha-homes.onrender.com/api";
       
       if (source === 'subscriptions') {
         url = `${baseUrl}/user-subsequent-payments/user/${user.id}`;
