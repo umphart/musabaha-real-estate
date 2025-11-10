@@ -6,14 +6,21 @@ import { styles, getStatusStyle, getSourceBadge } from './styles';
 const PlotCard = ({ plot, onProceedToPayment }) => {
   const progress = calculatePaymentProgress(plot);
   const isUsersTable = plot.source === 'usersTable';
-  const canMakePayment = (isUsersTable && plot.status === 'Active' && plot.current_balance > 0) || 
+  const canMakePayment = (isUsersTable && plot.status === 'Active' && plot.total_balance > 0) || 
                         (!isUsersTable && plot.status === 'approved');
 
   function calculatePaymentProgress(plot) {
-    if (!plot.total_price) return 0;
-    const paid = plot.total_paid || parseFloat(plot.initial_deposit || 0);
-    const total = parseFloat(plot.total_price);
-    return Math.min(Math.round((paid / total) * 100), 100);
+    if (!plot.total_money_to_pay || plot.total_money_to_pay === 0) return 0;
+    if (!plot.total_balance && plot.total_balance !== 0) return 0;
+    
+    const totalToPay = parseFloat(plot.total_money_to_pay);
+    const totalBalance = parseFloat(plot.total_balance);
+    
+    // Calculate paid amount: total_money_to_pay - total_balance
+    const paidAmount = totalToPay - totalBalance;
+    
+    // Ensure we don't exceed 100% and handle division by zero
+    return Math.min(Math.round((paidAmount / totalToPay) * 100), 100);
   }
 
   function formatCurrency(value) {
@@ -23,6 +30,14 @@ const PlotCard = ({ plot, onProceedToPayment }) => {
       currency: "NGN",
       minimumFractionDigits: 0,
     }).format(Number(value));
+  }
+
+  // Calculate paid amount
+  function calculatePaidAmount(plot) {
+    if (!plot.total_money_to_pay || !plot.total_balance) return 0;
+    const totalToPay = parseFloat(plot.total_money_to_pay);
+    const totalBalance = parseFloat(plot.total_balance);
+    return Math.max(totalToPay - totalBalance, 0);
   }
 
   return (
@@ -65,14 +80,14 @@ const PlotCard = ({ plot, onProceedToPayment }) => {
             <FiHome style={styles.detailIcon} />
             <div>
               <span style={styles.detailLabel}>Plot Size</span>
-              <span style={styles.detailValue}>{plot.plot_size || 'Not specified'}</span>
+              <span style={styles.detailValue}>{plot.plot_size }</span>
             </div>
           </div>
           <div style={styles.detailItem}>
             <FaNairaSign style={styles.detailIcon} />
             <div>
               <span style={styles.detailLabel}>Total Price</span>
-              <span style={styles.detailValue}>{formatCurrency(plot.total_price)}</span>
+              <span style={styles.detailValue}>{formatCurrency(plot.total_money_to_pay)}</span>
             </div>
           </div>
           <div style={styles.detailItem}>
@@ -107,8 +122,8 @@ const PlotCard = ({ plot, onProceedToPayment }) => {
               ></div>
             </div>
             <div style={styles.paymentSummary}>
-              <span>Paid: {formatCurrency(plot.total_paid || plot.initial_deposit)}</span>
-              <span>Balance: {formatCurrency(plot.current_balance)}</span>
+              <span>Paid: {formatCurrency(calculatePaidAmount(plot))}</span>
+              <span>Balance: {formatCurrency(plot.total_balance)}</span>
             </div>
           </div>
         )}
