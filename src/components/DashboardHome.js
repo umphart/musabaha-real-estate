@@ -81,7 +81,7 @@ const DashboardHome = ({ dashboardData, loading, notifications, subscriptionStat
       {/* Conditional Welcome Note - Only show if plotCount is 0 and not approved */}
       {dashboardData.plotCount === 0 && subscriptionStatus !== 'approved' && (
         <div className="welcome-card">
-          <h2>Welcome to Your Dashboard 🎉</h2>
+          <h2>Welcome to Your Dashboard.🎉</h2>
           <p>
             Get started by applying for your first plot. Manage everything in one place.
           </p>

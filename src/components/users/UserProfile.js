@@ -3,7 +3,8 @@ import {
   FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, 
   FiDollarSign, FiFileText, FiHome, FiCreditCard,
   FiCheckCircle, FiClock, FiTrendingUp, FiAward,
-  FiDatabase, FiEdit, FiDownload, FiEye
+  FiDatabase, FiEdit, FiDownload, FiEye, FiPercent,
+  FiBarChart2, FiPieChart
 } from "react-icons/fi";
 
 const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalType }) => {
@@ -268,28 +269,100 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
       transform: "translateY(-2px)",
       boxShadow: "0 6px 20px rgba(102, 126, 234, 0.6)",
     },
+    // New styles for financial section
+    financialGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+      gap: "0",
+    },
+    financialCard: {
+      padding: "25px",
+      borderBottom: "1px solid #e2e8f0",
+      borderRight: "1px solid #e2e8f0",
+      transition: "background-color 0.2s ease",
+      display: "flex",
+      flexDirection: "column",
+    },
+    financialValue: {
+      fontSize: "20px",
+      fontWeight: "700",
+      color: "#2d3748",
+      marginBottom: "8px",
+    },
+    financialLabel: {
+      fontSize: "12px",
+      fontWeight: "600",
+      color: "#718096",
+      textTransform: "uppercase",
+      letterSpacing: "0.5px",
+      marginBottom: "12px",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+    },
+    progressSection: {
+      gridColumn: "1 / -1",
+      padding: "25px",
+      borderBottom: "1px solid #e2e8f0",
+    },
+    progressHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "15px",
+    },
+    progressStats: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+      gap: "20px",
+      marginTop: "20px",
+    },
+    progressStat: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      padding: "15px",
+      background: "rgba(255, 255, 255, 0.6)",
+      borderRadius: "12px",
+      border: "1px solid rgba(255, 255, 255, 0.3)",
+    },
+    progressStatValue: {
+      fontSize: "18px",
+      fontWeight: "700",
+      color: "#2d3748",
+      marginBottom: "5px",
+    },
+    progressStatLabel: {
+      fontSize: "12px",
+      color: "#718096",
+      fontWeight: "500",
+    },
+  };
+
+  // Get active data - MOVED TO TOP
+  const getActiveData = () => {
+    return userData.find(item => item.source === activeTab);
   };
 
   // Add CSS animation
-  const styleSheet = document.styleSheets[0];
-  styleSheet.insertRule(`
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  `, styleSheet.cssRules.length);
+  useEffect(() => {
+    const styleSheet = document.styleSheets[0];
+    styleSheet.insertRule(`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `, styleSheet.cssRules.length);
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await fetch(
-
           `https://musabaha-homes.onrender.com/api/subscriptions?email=${user.email}`
-
         );
         const result = await response.json();
-        //("API Response:", result);
-
+        
         if (result.success && result.data && result.data.length > 0) {
           setUserData(result.data);
           const hasUsersTable = result.data.some(item => item.source === 'usersTable');
@@ -334,22 +407,42 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
     return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
   };
 
-  // Calculate payment progress
-  const calculateProgress = (data) => {
-    if (!data.total_money_to_pay || !data.initial_deposit) return 0;
-    const paid = parseFloat(data.initial_deposit);
-    const total = parseFloat(data.total_money_to_pay);
-    return Math.min(Math.round((paid / total) * 100), 100);
+  // Calculate payment progress based on total_money_to_pay and total_balance
+  const calculatePaymentProgress = (data) => {
+    if (!data.total_money_to_pay || data.total_money_to_pay === 0) return 0;
+    if (!data.total_balance && data.total_balance !== 0) return 0;
+    
+    const totalToPay = parseFloat(data.total_money_to_pay);
+    const totalBalance = parseFloat(data.total_balance);
+    
+    // Calculate paid amount: total_money_to_pay - total_balance
+    const paidAmount = totalToPay - totalBalance;
+    
+    return Math.min(Math.round((paidAmount / totalToPay) * 100), 100);
   };
 
-  // Get active data
-  const getActiveData = () => {
-    return userData.find(item => item.source === activeTab);
+  // Calculate paid amount
+  const calculatePaidAmount = (data) => {
+    if (!data.total_money_to_pay || !data.total_balance) return 0;
+    const totalToPay = parseFloat(data.total_money_to_pay);
+    const totalBalance = parseFloat(data.total_balance);
+    return Math.max(totalToPay - totalBalance, 0);
+  };
+
+  // Get progress color based on percentage
+  const getProgressColor = (progress) => {
+    if (progress >= 80) return 'linear-gradient(90deg, #48bb78, #68d391)';
+    if (progress >= 50) return 'linear-gradient(90deg, #4299e1, #63b3ed)';
+    if (progress >= 25) return 'linear-gradient(90deg, #ed8936, #f6ad55)';
+    return 'linear-gradient(90deg, #f56565, #fc8181)';
   };
 
   // Render usersTable data
   const renderUsersTableData = (data) => {
-    const progress = calculateProgress(data);
+    const progress = calculatePaymentProgress(data);
+    const paidAmount = calculatePaidAmount(data);
+    const totalToPay = parseFloat(data.total_money_to_pay || 0);
+    const remainingBalance = parseFloat(data.total_balance || 0);
     
     return (
       <>
@@ -371,8 +464,8 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
             onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
           >
             <FiCreditCard style={styles.statIcon} />
-            <div style={styles.statValue}>{formatCurrency(data.initial_deposit)}</div>
-            <div style={styles.statLabel}>Initial Deposit</div>
+            <div style={styles.statValue}>{formatCurrency(paidAmount)}</div>
+            <div style={styles.statLabel}>Amount Paid</div>
           </div>
           
           <div 
@@ -380,7 +473,7 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
             onMouseEnter={(e) => e.currentTarget.style.transform = styles.statCardHover.transform}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
           >
-            <FiTrendingUp style={styles.statIcon} />
+            <FiBarChart2 style={styles.statIcon} />
             <div style={styles.statValue}>{progress}%</div>
             <div style={styles.statLabel}>Payment Progress</div>
           </div>
@@ -457,33 +550,111 @@ const UserProfile = ({ user, users = [], approveUser, setSelectedUser, setModalT
           </div>
         </div>
 
-        {/* Financial Details */}
+        {/* Updated Financial Details Section */}
         <div style={styles.section}>
           <div style={styles.sectionHeader}>
             <FiDollarSign />
-            Financial Details
+            Financial Overview
           </div>
-          <div style={styles.grid}>
-            <div style={styles.infoCard}>
-              <div style={styles.infoLabel}>Price per Plot</div>
-              <div style={styles.infoValue}>{formatCurrency(data.price_per_plot)}</div>
+          
+          {/* Financial Summary Cards */}
+          <div style={styles.financialGrid}>
+            <div style={styles.financialCard}>
+              <div style={styles.financialLabel}>
+                <FiDollarSign />
+                Total Amount to Pay
+              </div>
+              <div style={styles.financialValue}>
+                {formatCurrency(data.total_money_to_pay)}
+              </div>
+              <div style={{fontSize: '12px', color: '#718096'}}>
+                Complete payment required
+              </div>
             </div>
-            <div style={styles.infoCard}>
-              <div style={styles.infoLabel}>Total Amount</div>
-              <div style={styles.infoValue}>{formatCurrency(data.total_money_to_pay)}</div>
+            
+            <div style={styles.financialCard}>
+              <div style={styles.financialLabel}>
+                <FiCreditCard />
+                Amount Paid
+              </div>
+              <div style={{...styles.financialValue, color: '#48bb78'}}>
+                {formatCurrency(paidAmount)}
+              </div>
+              <div style={{fontSize: '12px', color: '#718096'}}>
+                {progress}% of total amount
+              </div>
             </div>
-            <div style={styles.infoCard}>
-              <div style={styles.infoLabel}>Initial Deposit</div>
-              <div style={styles.infoValue}>{formatCurrency(data.initial_deposit)}</div>
+            
+            <div style={styles.financialCard}>
+              <div style={styles.financialLabel}>
+                <FiBarChart2 />
+                Remaining Balance
+              </div>
+              <div style={{...styles.financialValue, color: remainingBalance > 0 ? '#f56565' : '#48bb78'}}>
+                {formatCurrency(remainingBalance)}
+              </div>
+              <div style={{fontSize: '12px', color: '#718096'}}>
+                {remainingBalance > 0 ? 'Balance due' : 'Fully paid'}
+              </div>
             </div>
-            <div style={styles.infoCard}>
-              <div style={styles.infoLabel}>Remaining Balance</div>
-              <div style={styles.infoValue}>{formatCurrency(data.total_balance)}</div>
+            
+            <div style={styles.financialCard}>
+              <div style={styles.financialLabel}>
+                <FiPieChart />
+                Initial Deposit
+              </div>
+              <div style={styles.financialValue}>
+                {formatCurrency(data.initial_deposit)}
+              </div>
+              <div style={{fontSize: '12px', color: '#718096'}}>
+                Initial payment made
+              </div>
             </div>
-            <div style={{...styles.infoCard, gridColumn: '1 / -1'}}>
-              <div style={styles.infoLabel}>Payment Progress ({progress}%)</div>
-              <div style={styles.progressBar}>
-                <div style={{...styles.progressFill, width: `${progress}%`}}></div>
+          </div>
+
+          {/* Payment Progress Section */}
+          <div style={styles.progressSection}>
+            <div style={styles.progressHeader}>
+              <div style={styles.infoLabel}>
+                <FiTrendingUp />
+                Payment Progress ({progress}%)
+              </div>
+              <div style={{fontSize: '14px', fontWeight: '600', color: '#2d3748'}}>
+                {formatCurrency(paidAmount)} of {formatCurrency(totalToPay)}
+              </div>
+            </div>
+            
+            <div style={styles.progressBar}>
+              <div 
+                style={{
+                  ...styles.progressFill,
+                  width: `${progress}%`,
+                  background: getProgressColor(progress)
+                }}
+              ></div>
+            </div>
+
+            {/* Progress Statistics */}
+            <div style={styles.progressStats}>
+              <div style={styles.progressStat}>
+                <div style={styles.progressStatValue}>{formatCurrency(totalToPay)}</div>
+                <div style={styles.progressStatLabel}>Total Amount</div>
+              </div>
+              <div style={styles.progressStat}>
+                <div style={{...styles.progressStatValue, color: '#48bb78'}}>
+                  {formatCurrency(paidAmount)}
+                </div>
+                <div style={styles.progressStatLabel}>Paid Amount</div>
+              </div>
+              <div style={styles.progressStat}>
+                <div style={{...styles.progressStatValue, color: remainingBalance > 0 ? '#f56565' : '#48bb78'}}>
+                  {formatCurrency(remainingBalance)}
+                </div>
+                <div style={styles.progressStatLabel}>Remaining Balance</div>
+              </div>
+              <div style={styles.progressStat}>
+                <div style={styles.progressStatValue}>{progress}%</div>
+                <div style={styles.progressStatLabel}>Completion</div>
               </div>
             </div>
           </div>

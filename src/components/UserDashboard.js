@@ -66,6 +66,14 @@ const UserDashboard = ({ user, onLogout }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Formatting functions
+  const formatCurrency = (amount) => {
+    if (!amount) return "₦0";
+    return `₦${Number(amount).toLocaleString()}`;
+  };
+
+  // REMOVED the problematic getActiveData function since it's not needed in UserDashboard
+
   // Use useCallback to prevent infinite re-renders
   const determineDataSource = useCallback(async () => {
     if (!user?.email) {
@@ -535,50 +543,6 @@ const fetchDashboardData = useCallback(async (source, currentSubscriptionId) => 
     }
   };
 
-  // Simplified useEffect - only one effect to rule them all
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const initializeData = async () => {
-      setLoading(true);
-      try {
-        console.log("🔄 Initializing dashboard data...");
-        
-        // Step 1: Determine data source
-        const sourceInfo = await determineDataSource();
-        console.log("📊 Source determined:", sourceInfo);
-        
-        // Step 2: Fetch dashboard data based on source
-        await fetchDashboardData(sourceInfo.source, sourceInfo.subscriptionId);
-        
-        // Step 3: Fetch payments based on source
-        if (sourceInfo.source === 'userstable' && !sourceInfo.subscriptionId) {
-          console.log("⏳ Waiting for subscription data...");
-          setPayments([]);
-        } else {
-          await fetchPayments(sourceInfo.source, sourceInfo.subscriptionId);
-        }
-      } catch (error) {
-        console.error("Error initializing dashboard data:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Initialization Error",
-          text: "Failed to load dashboard information.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeData();
-  }, [user?.id, determineDataSource, fetchDashboardData, fetchPayments]);
-
-  // Formatting functions
-  const formatCurrency = (amount) => {
-    if (!amount) return "₦0";
-    return `₦${Number(amount).toLocaleString()}`;
-  };
-
   // Show notification when status changes to approved
   const showStatusChangeNotification = () => {
     // Add to notifications list
@@ -631,6 +595,44 @@ const fetchDashboardData = useCallback(async (source, currentSubscriptionId) => 
     setNotifications([]);
     setShowNotification(false);
   };
+
+  // Simplified useEffect - only one effect to rule them all
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const initializeData = async () => {
+      setLoading(true);
+      try {
+        console.log("🔄 Initializing dashboard data...");
+        
+        // Step 1: Determine data source
+        const sourceInfo = await determineDataSource();
+        console.log("📊 Source determined:", sourceInfo);
+        
+        // Step 2: Fetch dashboard data based on source
+        await fetchDashboardData(sourceInfo.source, sourceInfo.subscriptionId);
+        
+        // Step 3: Fetch payments based on source
+        if (sourceInfo.source === 'userstable' && !sourceInfo.subscriptionId) {
+          console.log("⏳ Waiting for subscription data...");
+          setPayments([]);
+        } else {
+          await fetchPayments(sourceInfo.source, sourceInfo.subscriptionId);
+        }
+      } catch (error) {
+        console.error("Error initializing dashboard data:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Initialization Error",
+          text: "Failed to load dashboard information.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeData();
+  }, [user?.id, determineDataSource, fetchDashboardData, fetchPayments]);
 
   // Poll for subscription status changes every 30 seconds
   useEffect(() => {
