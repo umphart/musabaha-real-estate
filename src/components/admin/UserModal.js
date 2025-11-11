@@ -24,6 +24,7 @@ const UserModal = ({ type, user, plots, onClose, onSuccess }) => {
 
   const [selectedPlots, setSelectedPlots] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showAllPlots, setShowAllPlots] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://musabaha-homes.onrender.com/api';
 
@@ -234,64 +235,77 @@ const requestBody = {
               </div>
             </div>
 
-            {type === 'create' && (
-              <div className="form-section compact-section">
-                <h4>
-                  <FiMapPin className="icon" /> 
-                  Plot Selection 
-                  <span className="plots-count">({selectedPlots.length} selected)</span>
-                </h4>
-                
-                <div className="compact-plots-container">
-                  <div className="plots-mini-grid">
-                    {plots.slice(0, 6).map(plot => (
-                      <div 
-                        key={plot.id}
-                        className={`plot-mini-card ${selectedPlots.some(p => p.id === plot.id) ? 'selected' : ''}`}
-                        onClick={() => handlePlotSelection(plot)}
-                        title={`Plot ${plot.number} - ${plot.location} - ${formatCurrency(plot.price)}`}
-                      >
-                        <span className="plot-mini-number">#{plot.number}</span>
-                        <span className="plot-mini-price">{formatCurrency(plot.price)}</span>
-                        {selectedPlots.some(p => p.id === plot.id) ? (
-                          <FiCheckCircle className="selected-icon" />
-                        ) : (
-                          <FiCircle className="unselected-icon" />
-                        )}
-                      </div>
-                    ))}
-                    {plots.length > 6 && (
-                      <div className="plot-more-indicator">
-                        +{plots.length - 6} more
-                      </div>
-                    )}
-                  </div>
-                  
-                  {selectedPlots.length > 0 && (
-                    <div className="selected-plots-compact">
-                      <div className="selected-plots-tags">
-                        {selectedPlots.map(plot => (
-                          <span key={plot.id} className="plot-tag">
-                            Plot {plot.number}
-                            <button 
-                              type="button"
-                              className="tag-remove"
-                              onClick={() => handlePlotSelection(plot)}
-                            >
-                              <FiX size={12} />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                      <div className="plots-total">
-                        <span>Total Plots: {selectedPlots.length}</span>
-                        <span>Total: {formatCurrency(selectedPlots.reduce((sum, plot) => sum + parseFloat(plot.price || 0), 0))}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+{type === 'create' && (
+  <div className="form-section compact-section">
+    <h4>
+      <FiMapPin className="icon" /> 
+      Plot Selection 
+      <span className="plots-count">({selectedPlots.length} selected)</span>
+    </h4>
+    
+    <div className="compact-plots-container">
+      <div className="plots-mini-grid">
+        {plots.slice(0, showAllPlots ? plots.length : 6).map(plot => (
+          <div 
+            key={plot.id}
+            className={`plot-mini-card ${selectedPlots.some(p => p.id === plot.id) ? 'selected' : ''}`}
+            onClick={() => handlePlotSelection(plot)}
+            title={`Plot ${plot.number} - ${plot.location} - ${formatCurrency(plot.price)}`}
+          >
+            <span className="plot-mini-number">#{plot.number}</span>
+            <span className="plot-mini-price">{formatCurrency(plot.price)}</span>
+            {selectedPlots.some(p => p.id === plot.id) ? (
+              <FiCheckCircle className="selected-icon" />
+            ) : (
+              <FiCircle className="unselected-icon" />
             )}
+          </div>
+        ))}
+        
+        {plots.length > 6 && !showAllPlots && (
+          <div 
+            className="plot-more-indicator clickable"
+            onClick={() => setShowAllPlots(true)}
+          >
+            +{plots.length - 6} more
+          </div>
+        )}
+        
+        {plots.length > 6 && showAllPlots && (
+          <div 
+            className="plot-less-indicator clickable"
+            onClick={() => setShowAllPlots(false)}
+          >
+            Show less
+          </div>
+        )}
+      </div>
+      
+      {selectedPlots.length > 0 && (
+        <div className="selected-plots-compact">
+          <div className="selected-plots-tags">
+            {selectedPlots.map(plot => (
+              <span key={plot.id} className="plot-tag">
+                Plot {plot.number}
+                <button 
+                  type="button"
+                  className="tag-remove"
+                  onClick={() => handlePlotSelection(plot)}
+                >
+                  <FiX size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="plots-total">
+            <span>Total Plots: {selectedPlots.length}</span>
+            <span>Total: {formatCurrency(selectedPlots.reduce((sum, plot) => sum + parseFloat(plot.price || 0), 0))}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
             {/* Rest of your form sections remain the same */}
             <div className="form-section compact-section">
