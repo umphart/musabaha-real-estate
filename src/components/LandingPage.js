@@ -55,8 +55,8 @@ const LandingPage = () => {
           <h2>Contact Us</h2>
           <div className="contact-info">
             <p><strong>Address:</strong> No. 015, City Plaza Along Ring Road Western Bypass Along Yankaba Road, Kano State.</p>
-            <p><strong>Phone:</strong> +2349084220705, +2349039108863, +2347038192719</p>
-            <p><strong>Email:</strong> musababahomesth@gmail.com</p>
+            <p><strong>Phone:</strong> 09064220705, 08037023070, 09039108853</p>
+            <p><strong>Email:</strong>musabahahomesltd@gmail.com </p>
           </div>
         </div>
       </section>
