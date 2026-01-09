@@ -155,7 +155,7 @@ function App() {
             } 
           />
           <Route 
-            path="/admin-login" 
+            path="/abcdefg-admin-login" 
             element={isAuthenticated && user && user.role === 'admin' ? 
               <Navigate to="/admin" replace /> : 
               <AdminLogin onAdminLogin={handleAdminLogin} />
